@@ -624,9 +624,9 @@ class Blink_Detect():
 #             stop_times = row.beepEndTimes.split("---values=")[1].strip("\"").split(";")
 #             stop_times = [int(t) - int(row.RecStart) for t in stop_times if len(t)>1]
                         
-#             if pred_df[pred_df.iloc[:,-1] == "NA"].shape[0] > 0.3*pred_df.shape[0]:
-#                 print("> 30% missing data")
-#                 continue
+            if pred_df[pred_df.iloc[:,-1] == "NA"].shape[0] > 0.3*pred_df.shape[0]:
+                print("> 30% missing data")
+                continue
             
             disp_df = pred_df.replace("NA",np.nan).interpolate(method='linear') #try other Interpolation methods?
 #             med = statistics.median(disp_df.iloc[:,-1])
@@ -641,20 +641,20 @@ class Blink_Detect():
             c = get_frame_count(fname)
             vid_len = float(row.RecStop - row.RecStart)
             fps = c/vid_len #in ms
-            out = thresholding_algo(disp_df.iloc[:,-1].to_numpy(), 40, 4, 0)
+            out = thresholding_algo(disp_df.iloc[:,-1].to_numpy(), 10, 4, 0.3)
             signals = np.pad(out["signals"][40:],(40,0),constant_values=0)
             onsets = time_to_frame(start_times, fps)
             assert len(signals) == disp_df.shape[0]
             
             latency=[]
             mean_interval = time_to_frame([statistics.mean(intervals)],fps)[0]
-            print("mean int",mean_interval)
+#             print("mean int",mean_interval) = o/p is in range (45,48)
             for i,j in zip(onsets,(onsets[1:]+[onsets[-1]+mean_interval])):
                 if -1 in signals[i:j]:
                     latency.append(np.where(signals[i:j]==-1)[0][0])
                 else:
                     latency.append(np.nan)
-            print("LATENCY",latency)
+#             print("LATENCY",latency)
                            
             if show:
                 print("Recording Name : ",rec_name)
