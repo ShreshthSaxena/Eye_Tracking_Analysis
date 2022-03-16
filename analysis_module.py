@@ -4,6 +4,7 @@ import imutils
 import math
 import cv2
 from scipy.stats.mstats import winsorize
+from datetime import datetime as dt
 from enum import Enum
 from tqdm import tqdm
 
@@ -50,6 +51,14 @@ def get_frame_count(fname):
             break
         c+=1
     return c
+
+def get_time(row):
+    format = '%Y-%m-%dT%H:%M:%S.000Z'
+    start = dt.strptime(row["start_time"],format)
+    end = dt.strptime(row["end_time"],format)
+    duration = end-start
+    return duration, row["completed"]
+
 
 def time_to_frame(l, fps):
     return [int(fps*float(pt)) for pt in l]
@@ -105,6 +114,20 @@ def labVanced_present(img):
     return img,xbounds,ybounds
 
 
+## from retinaface import RetinaFace (not used finally but a nice face detection alternative)
+# def face_n_fps(path, vid_len):
+#     vid = cv2.VideoCapture(path)
+#     c,f=0,0
+#     while True:
+#         ret,frame = vid.read()
+#         resp = RetinaFace.detect_faces(frame)
+#         if not ret:
+#             break
+#         if len(resp.keys()) > 0:
+#             f+=1
+#         c+=1
+#         print(c)
+#     return f*100/c, c/float(vid_len)
 
 
 ## Calib Tests Dataframes
@@ -113,7 +136,7 @@ def consolidate_1(subjects, model, labels = ["Beg", "Beg+Mid", "Beg+Mid+End"], s
     for subb in tqdm(subjects): 
         fix_analyse = Fixation(subb, show = False)
         for factor in [1,2,3]:
-            trial_x, trial_y, *_ = fix_analyse.parse_trials(model, 1, f"poly_x_{factor}", f"poly_y_{factor}", show = False)
+            trial_x, trial_y, *_ = fix_analyse.parse_trials(model, f"poly_x_{factor}", f"poly_y_{factor}", calib_test=1, show = False)
             acc = get_fix_acc(fix_analyse.gt_points, trial_x, trial_y)
             ct1 = ct1.append({"subject":subb, "factor": labels[factor-1], "acc":acc}, ignore_index = True)
     if save: ct1.to_csv(f"calib_tests_df/{model.name.lower()}_ct1.csv", index = False)
@@ -124,7 +147,7 @@ def consolidate_2(subjects, model, labels = ["Beg+Mid+End", "BlockWise"],save = 
     for subb in tqdm(subjects): 
         fix_analyse = Fixation(subb, show = False)
         for test,col in zip([1,2], [("poly_x_3", "poly_y_3"), ("poly_x","poly_y")]): #UPDATE from best results of calib_test1
-            trial_x, trial_y, *_ = fix_analyse.parse_trials(model,test, col[0], col[1], show = False)
+            trial_x, trial_y, *_ = fix_analyse.parse_trials(model, col[0], col[1], calib_test=test, show = False)
             acc = get_fix_acc(fix_analyse.gt_points, trial_x, trial_y)
             ct2 = ct2.append({"subject":subb, "factor": labels[test-1], "acc":acc}, ignore_index = True)
     if save: ct2.to_csv(f"calib_tests_df/{model.name.lower()}_ct2.csv", index = False)
@@ -135,7 +158,7 @@ def consolidate_3(subjects, model, labels=["E","SP","E+SP"], save = False):
     for subb in tqdm(subjects): 
         fix_analyse = Fixation(subb, show = False)
         for factor in [1,2,3]: 
-            trial_x, trial_y, *_ = fix_analyse.parse_trials(model,3, f"poly_x_{factor}", f"poly_y_{factor}", show = False)
+            trial_x, trial_y, *_ = fix_analyse.parse_trials(model, f"poly_x_{factor}", f"poly_y_{factor}", calib_test=3, show = False)
             acc = get_fix_acc(fix_analyse.gt_points, trial_x, trial_y)
             ct3 = ct3.append({"subject":subb, "factor": labels[factor-1], "acc":acc}, ignore_index = True)
     if save: ct3.to_csv(f"calib_tests_df/{model.name.lower()}_ct3.csv", index = False)

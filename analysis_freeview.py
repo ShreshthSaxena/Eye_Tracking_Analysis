@@ -8,7 +8,7 @@ from scipy.stats.mstats import winsorize
 from analysis_module import *
 
 import sys
-sys.path.append('/hpc/users/shreshth.saxena/Models/blink_Soukuova_and_Check/')
+sys.path.append('Models/blink_Soukuova_and_Check/')
 from quick_blinks import get_ear
 
 class FreeView():
@@ -45,10 +45,10 @@ class FreeView():
                 print("FPS : ",fps)
                 print("file name",fname)
                 
-            if model_outputs:
+            if model_outputs: #if uncalibrated data needs to be analysed
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs/Block_{row.Block_Nr}/FreeView{row.Trial_Id}.csv"))
             else:
-                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_final/Block_{row.Block_Nr}/FreeView{row.Trial_Id}.csv"))
+                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_allcalib/Block_{row.Block_Nr}/FreeView{row.Trial_Id}.csv"))
                                     
             if show:
                 ax = plot_one_subject(row["Trial_Id"],pred_df["pred_x"],pred_df["pred_y"])

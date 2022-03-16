@@ -17,13 +17,32 @@ class Fixation():
         self.subb = subb
         self.df = pd.read_csv(f"Subjects/{subb}/data.csv")
         self.task_df = self.df[self.df["Task_Name"] == "1. Fixation"]
+        self.palette = sns.color_palette('colorblind',14)
         if show:
             print("task_df summary \n {}".format(self.summary()))
 
     def summary(self):
         print(self.task_df.iloc[0].dropna()[8:17])
     
-    def parse_trials(self, model, col_x, col_y, pred_final = False, calib_test=None, model_outputs = False, show = True):
+    def parse_trials(self, model, col_x, col_y, pred_final = False, pred_allcalib=True, calib_test=None, model_outputs = False, model_outputs_FT=False, eth_kalman = False, show = True):
+        """
+        
+        pick appropriate column names for each mode using col_x, col_y
+        choose a mode from 
+        
+        model_outputs: use uncalibrated predictions
+        
+        pred_final: use Beg+Mid+End calibrated predictions 
+        
+        pred_allcalib: use Beg+Mid+End with E+SP calib predictions (best resulting strategy ETRA shortpaper)
+        
+        eth_kalman: use kalman filtered predictions from ETH !!make sure that model==pred_path.ETH!! 
+        
+        model_outputs_FT: use fine tuned predictions !!make sure that model==pred_path.FAZE!!
+        
+        calib_test: use for calibration tests 1,2,3
+        
+        """
         
         trial_x = {key:[] for key in range(1,14)}
         trial_y = {key:[] for key in range(1,14)}
@@ -70,6 +89,13 @@ class Fixation():
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/calib_test{calib_test}/outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
             elif pred_final:
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_final/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+            elif pred_allcalib:
+#                 dir_ = "pred_FT_allcalib" if model == pred_path.FAZE else "pred_allcalib" 
+                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_allcalib/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+            elif model == pred_path.ETH and eth_kalman == True:
+                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/kalman_preds/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+            elif model == pred_path.FAZE and model_outputs_FT == True:
+                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs_FT/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
             else:
                 continue
             
@@ -166,33 +192,45 @@ def confidence_ellipse(x, y, ax, n_std=3, facecolor='none', **kwargs):
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
 
-def fix_plot(pts, df, figsize=(18,9),kind = 'def'):
+def fix_plot(pts, df, figsize=(18,9),kind = 'def', xmin=0, xmax=1600, ymin=0,ymax=900):
     '''
     use kind from one of the following: all_subjects, err, ellipse
     '''
     fig,ax = plt.subplots(figsize=figsize)
-    pallete = iter(sns.color_palette('colorblind',13))
+    palette = iter(sns.color_palette('colorblind',13))
     for key in range(13):
-        c = next(pallete)
+        c = next(palette)
         gt = pts[key]
         xs = winsorize(df['mean_x'].apply( lambda x: x[key+1] ), limits=[0.1,0.1]) 
         ys = winsorize(df['mean_y'].apply( lambda y: y[key+1] ), limits=[0.1,0.1])
         if kind == 'all_subjects':
             ax.plot(gt[0],gt[1], marker="+", markersize=15, color = c)
             ax.scatter(xs,ys, color = c, s=60)
+        
         elif kind == 'err':
             ax.errorbar(xs.mean(),ys.mean(),xerr = xs.std(),yerr = ys.std(),color = c,alpha=0.3, linestyle="None", marker = ".")
             ax.plot(gt[0],gt[1],marker="h", markersize = 10, color = c)
+        
         elif kind == 'ellipse':
             ax.scatter(xs.mean(), ys.mean(), s=50, color = c)
             ax.plot(gt[0],gt[1],marker="+", mew=3, markersize = 12, color = c)
+#             ax.errorbar(xs.mean(),ys.mean(),xerr = xs.std(),yerr = ys.std(),color = c,alpha=0.3, linestyle="None", marker = ".")
+            ellipse = Ellipse((xs.mean(), ys.mean()), width=xs.std()*2, height=ys.std()*2,
+                      facecolor='none', edgecolor=c, alpha=0.8, lw=2)
+            ax.add_patch(ellipse)
+#             ax.legend(["+",".","--"], )
+        
+        elif kind == 'cov_ellipse':
+            ax.scatter(xs.mean(), ys.mean(), s=50, color = c)
+            ax.plot(gt[0],gt[1],marker="+", mew=5, markersize = 12, color = c)
             confidence_ellipse(xs, ys, ax, n_std=1, edgecolor="black", alpha=0.8 )#, linestyle="--")
+        
         elif kind == 'def':
             ax.plot(xs.mean(),ys.mean(),marker = ".", markersize = 30 , color = c)
             ax.plot(gt[0],gt[1],marker="+", markersize = 15, color = c)  
 
-#     ax.set_xlim(0,xlim)
-#     ax.set_ylim(0,ylim)
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
     return ax
 
 

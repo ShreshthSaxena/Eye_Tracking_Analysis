@@ -72,7 +72,7 @@ class Smooth_Pursuit():
             if model_outputs:
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs/Block_{row.Block_Nr}/Smooth Pursuit{row.Trial_Id}.csv"))
             else:
-                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_final/Block_{row.Block_Nr}/Smooth Pursuit{row.Trial_Id}.csv"))
+                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_allcalib/Block_{row.Block_Nr}/Smooth Pursuit{row.Trial_Id}.csv"))
             
             for index,pt in enumerate(l):
                 sub = pred_df[pred_df.frame.between(pt[0],pt[1])] # movement duration

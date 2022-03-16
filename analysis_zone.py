@@ -58,7 +58,7 @@ class Zone_Classification():
             if model_outputs:
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs/Block_{row.Block_Nr}/Zone Classification{row.Trial_Id}.csv"))
             else:
-                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_final/Block_{row.Block_Nr}/Zone Classification{row.Trial_Id}.csv"))
+                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_allcalib/Block_{row.Block_Nr}/Zone Classification{row.Trial_Id}.csv"))
                 
             l = [(int(j),int(i)) for i,j in zip(time_to_frame(stop_times, fps),time_to_frame(start_times, fps))]
             for index,pt in enumerate(l):
