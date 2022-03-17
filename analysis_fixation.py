@@ -24,7 +24,7 @@ class Fixation():
     def summary(self):
         print(self.task_df.iloc[0].dropna()[8:17])
     
-    def parse_trials(self, model, col_x, col_y, pred_final = False, pred_allcalib=True, calib_test=None, model_outputs = False, model_outputs_FT=False, eth_kalman = False, show = True):
+    def parse_trials(self, model, col_x, col_y, pred_final = False, pred_allcalib=False, calib_test=None, model_outputs = False, model_outputs_FT=False, eth_kalman = False, show = True):
         """
         
         pick appropriate column names for each mode using col_x, col_y
@@ -32,7 +32,7 @@ class Fixation():
         
         model_outputs: use uncalibrated predictions
         
-        pred_final: use Beg+Mid+End calibrated predictions 
+        pred_final: use Beg+Mid+End calibrated predictions (only E calib)
         
         pred_allcalib: use Beg+Mid+End with E+SP calib predictions (best resulting strategy ETRA shortpaper)
         
@@ -43,6 +43,7 @@ class Fixation():
         calib_test: use for calibration tests 1,2,3
         
         """
+        assert pred_final+pred_allcalib+(calib_test!=None)+model_outputs+(model==pred_path.FAZE and model_outputs_FT)+(model==pred_path.ETH and eth_kalman) == 1, "Check function arguments"
         
         trial_x = {key:[] for key in range(1,14)}
         trial_y = {key:[] for key in range(1,14)}
@@ -98,6 +99,9 @@ class Fixation():
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs_FT/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
             else:
                 continue
+                
+            if model==pred_path.MPII and pred_df.frame.isna().any():
+                pred_df["frame"] = pred_df.index+1 #correcting MPII csv error
             
             for index,pt in enumerate(l):
                 sub = pred_df[pred_df.frame.between(pt[0],pt[1])]
@@ -109,7 +113,8 @@ class Fixation():
                     #accuracy
                     trial_x[fix_seq[index]].append(round(statistics.median(sub[col_x]),2))
                     trial_y[fix_seq[index]].append(round(statistics.median(sub[col_y]),2))
-                except:
+                except Exception as e:
+#                     print(e)
                     trial_x[fix_seq[index]].append(np.nan)
                     trial_y[fix_seq[index]].append(np.nan)
                     print(f"{self.subb} adding nan to pt {fix_seq[index]} trial {index}") 
