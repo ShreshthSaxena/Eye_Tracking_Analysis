@@ -24,7 +24,7 @@ class Fixation():
     def summary(self):
         print(self.task_df.iloc[0].dropna()[8:17])
     
-    def parse_trials(self, model, col_x, col_y, pred_final = False, pred_allcalib=False, calib_test=None, model_outputs = False, model_outputs_FT=False, eth_kalman = False, show = True):
+    def parse_trials(self, model, col_x, col_y, pred_final = False, pred_allcalib=False, calib_test=None, model_outputs = False, model_outputs_FT=False, eth_kalman = False, show = True, df_path=None):
         """
         
         pick appropriate column names for each mode using col_x, col_y
@@ -87,7 +87,9 @@ class Fixation():
             if model_outputs:
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
             elif calib_test != None:
-                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/calib_test{calib_test}/outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+                if df_path == None:
+                    pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/calib_test{calib_test}/outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+                else: pred_df = pd.read_csv(os.path.join(model.value, self.subb, df_path, f"Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
             elif pred_final:
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_final/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
             elif pred_allcalib:
@@ -114,7 +116,7 @@ class Fixation():
                     trial_x[fix_seq[index]].append(round(statistics.median(sub[col_x]),2))
                     trial_y[fix_seq[index]].append(round(statistics.median(sub[col_y]),2))
                 except Exception as e:
-#                     print(e)
+                    print(e)
                     trial_x[fix_seq[index]].append(np.nan)
                     trial_y[fix_seq[index]].append(np.nan)
                     print(f"{self.subb} adding nan to pt {fix_seq[index]} trial {index}") 
