@@ -85,7 +85,10 @@ class Fixation():
                 print("diff : ", [int(i)-int(j) for i,j in zip(posChange,time_pts)])
                 
             if model_outputs:
-                pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+                if df_path != None:
+                    pred_df = pd.read_csv(os.path.join(model.value, self.subb,df_path,f"Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
+                else:
+                    pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/model_outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))                
             elif calib_test != None:
                 if df_path == None:
                     pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/calib_test{calib_test}/outputs/Block_{row.Block_Nr}/Fixation{row.Trial_Id}.csv"))
@@ -143,29 +146,32 @@ class Fixation():
         return trial_x,trial_y,rms,std
     
 ## Task Measures
-def get_fix_acc(GT, trial_x,trial_y):
+def get_fix_acc(GT, trial_x,trial_y, pt_index = range(1,14)):
     error_trials = []
     for trial in range(10):
         error_pts = []
-        for pt in range(1,14):
+        #winsorize means over points
+        for pt in pt_index:
             error_pts.append(get_dist(GT[pt-1], (trial_x[pt][trial],trial_y[pt][trial])))
-        assert len(error_pts)==13, print(len(error_pts))
+#         assert len(error_pts)==13, print(len(error_pts))
         error_trials.append(winsorize(pd.Series(error_pts).dropna(), limits=[0.1,0.1]).mean())
+    #finally winsorize mean over trials 
     acc = winsorize(error_trials, limits=[0.1,0.1]).mean() 
     return acc
 
-def get_fix_precision(rms, std):
+def get_fix_precision(rms, std, pt_index = range(1,14)):
     np_rms = rms.copy()
     np_std = std.copy()
+    pt_index = [i-1 for i in pt_index] #index starting from 0
     #winsorize mean over points
     for i in range(10):
-        np_rms[:,i] = winsorize(np_rms[:,i], limits=[0.1,0.1])
-        np_std[:,i] = winsorize(np_std[:,i], limits=[0.1,0.1])
+        np_rms[pt_index,i] = winsorize(np_rms[pt_index,i], limits=[0.1,0.1])
+        np_std[pt_index,i] = winsorize(np_std[pt_index,i], limits=[0.1,0.1])
     #mean over trials
-    mean_rms = winsorize(np_rms.mean(axis=0), limits=[0.1,0.1]).mean()
-    mean_std = winsorize(np_std.mean(axis=0), limits=[0.1,0.1]).mean()
+    mean_rms = winsorize(np_rms[pt_index, :].mean(axis=0), limits=[0.1,0.1]).mean()
+    mean_std = winsorize(np_std[pt_index, :].mean(axis=0), limits=[0.1,0.1]).mean()
     return mean_rms, mean_std
-    
+
     
 #Plotting functions
 def confidence_ellipse(x, y, ax, n_std=3, facecolor='none', **kwargs):
@@ -199,45 +205,45 @@ def confidence_ellipse(x, y, ax, n_std=3, facecolor='none', **kwargs):
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
 
-def fix_plot(pts, df, figsize=(18,9),kind = 'def', xmin=0, xmax=1600, ymin=0,ymax=900):
+def fix_plot(pts, df, ax,kind = 'def', xmin=0, xmax=1600, ymin=0,ymax=900, color = "teal"):
     '''
     use kind from one of the following: all_subjects, err, ellipse
     '''
-    fig,ax = plt.subplots(figsize=figsize)
-    palette = iter(sns.color_palette('colorblind',13))
+#     palette = iter(sns.color_palette('husl',13))
     for key in range(13):
-        c = next(palette)
         gt = pts[key]
         xs = winsorize(df['mean_x'].apply( lambda x: x[key+1] ), limits=[0.1,0.1]) 
         ys = winsorize(df['mean_y'].apply( lambda y: y[key+1] ), limits=[0.1,0.1])
         if kind == 'all_subjects':
-            ax.plot(gt[0],gt[1], marker="+", markersize=15, color = c)
-            ax.scatter(xs,ys, color = c, s=60)
+            ax.plot(gt[0],gt[1],marker="+", mew=3, markersize = 12, color = 'k')
+            ax.scatter(xs,ys, color = color, s=60)
         
         elif kind == 'err':
-            ax.errorbar(xs.mean(),ys.mean(),xerr = xs.std(),yerr = ys.std(),color = c,alpha=0.3, linestyle="None", marker = ".")
-            ax.plot(gt[0],gt[1],marker="h", markersize = 10, color = c)
+            ax.errorbar(xs.mean(),ys.mean(),xerr = xs.std(),yerr = ys.std(),color = color,alpha=0.8, linestyle="None", marker = ".")
+            ax.plot(gt[0],gt[1],marker="h", markersize = 10, color = "k")
         
         elif kind == 'ellipse':
-            ax.scatter(xs.mean(), ys.mean(), s=50, color = c)
-            ax.plot(gt[0],gt[1],marker="+", mew=3, markersize = 12, color = c)
+            ax.scatter(xs.mean(), ys.mean(), s=50, color = color)
+            ax.plot(gt[0],gt[1],marker="+", mew=3, markersize = 12, color = 'k')
 #             ax.errorbar(xs.mean(),ys.mean(),xerr = xs.std(),yerr = ys.std(),color = c,alpha=0.3, linestyle="None", marker = ".")
             ellipse = Ellipse((xs.mean(), ys.mean()), width=xs.std()*2, height=ys.std()*2,
-                      facecolor='none', edgecolor=c, alpha=0.8, lw=2)
+                      facecolor=color, edgecolor=color, alpha=0.2, lw=5)
             ax.add_patch(ellipse)
 #             ax.legend(["+",".","--"], )
         
         elif kind == 'cov_ellipse':
-            ax.scatter(xs.mean(), ys.mean(), s=50, color = c)
-            ax.plot(gt[0],gt[1],marker="+", mew=5, markersize = 12, color = c)
+            ax.scatter(xs.mean(), ys.mean(), s=50, color = color)
+            ax.plot(gt[0],gt[1],marker="+", mew=5, markersize = 12, color = "k")
             confidence_ellipse(xs, ys, ax, n_std=1, edgecolor="black", alpha=0.8 )#, linestyle="--")
         
         elif kind == 'def':
-            ax.plot(xs.mean(),ys.mean(),marker = ".", markersize = 30 , color = c)
-            ax.plot(gt[0],gt[1],marker="+", markersize = 15, color = c)  
+            ax.plot(xs.mean(),ys.mean(),marker = ".", markersize = 30 , color = color)
+            ax.plot(gt[0],gt[1],marker="+", markersize = 15, color = "k")  
 
     ax.set_xlim(xmin,xmax)
     ax.set_ylim(ymin,ymax)
-    return ax
+    ax.set_xticks([0,400,800,1200,1600])
+    ax.set_yticks([0,300,600,900])
+    return
 
 

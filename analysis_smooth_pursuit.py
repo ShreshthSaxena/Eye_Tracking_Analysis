@@ -10,7 +10,7 @@ from analysis_module import *
 import saccademodel
 from scipy.stats import circmean as cim, circstd as cis
 from sklearn.linear_model import LinearRegression
-
+from scipy.signal import savgol_filter
 
 class Smooth_Pursuit():
     def __init__(self, subb, show=True):
@@ -52,7 +52,7 @@ class Smooth_Pursuit():
             click_times = [int(t) - int(row.RecStart) for t in click_times if len(t)>1]
             
             
-            l = [(int(j),int(i)) for i,j in zip(time_to_frame(stop_times, fps),time_to_frame(start_times, fps))]
+            l = [(int(i),int(j)) for i,j in zip(time_to_frame(start_times, fps), time_to_frame(stop_times, fps))]
             click_frames = time_to_frame(click_times, fps)
             
             if show:
@@ -75,15 +75,15 @@ class Smooth_Pursuit():
                 pred_df = pd.read_csv(os.path.join(model.value, f"{self.subb}/pred_allcalib/Block_{row.Block_Nr}/Smooth Pursuit{row.Trial_Id}.csv"))
             
             for index,pt in enumerate(l):
-                sub = pred_df[pred_df.frame.between(pt[0],pt[1])] # movement duration
+                sub = pred_df[pred_df.frame.between(pt[0],pt[1])] # movement duration (animation start (pt[0]) -> animation stop(pt[1]))
                 trial_x[seq[index]].append(sub[colx])
                 trial_y[seq[index]].append(sub[coly])
                 try:
                     sub2 = pred_df[pred_df.frame.between(click_frames[index],pt[1])] # from user click to movement stop
                     sm_output = saccademodel.fit([(row.pred_x, row.pred_y) for _,row in sub2.iterrows()])
                     onset_time = frame_to_time([len(sm_output["source_points"])], fps)[0]
-                    onsets[seq[index]].append((click_times[index]+onset_time) - start_times[index]) # detected onset time from movement start in ms
-#                     print(click_times[index]+onset_time, start_times[index])
+                    onset_time = click_times[index]+onset_time - start_times[index]
+                    onsets[seq[index]].append(onset_time) # detected onset time from movement start in ms, rejected if onset_time<70ms
                 except Exception as e:
                     print(e)
                     onsets[seq[index]].append((np.nan, start_times[index]))
@@ -100,6 +100,11 @@ class Smooth_Pursuit():
         return trial_x,trial_y, onsets
       
 # Analysis functions
+
+def apply_filter(data):
+    win_len = len(data)//3
+    win_len = win_len+1 if win_len%2 == 0 else win_len
+    return savgol_filter(data, window_length = win_len, polyorder=1, deriv=0, mode='nearest', cval=0.0)
 
 def process_trials(trial_x, trial_y, angles, show = False):
     avg = {k:[] for k in angles}
@@ -151,3 +156,97 @@ def mean_angle_preds(trial_x,trial_y, angles, show= False):
             print("orig mean: ",cim(reg_angles[angle], high=360, low=0))
             print("stdv: ", cstd[angle])
     return cmean,diff,cstd
+
+#cmeans 
+def get_win_sub(SP_cmeans, std_error = False):
+    win_sub_cmean = {}
+    win_sub_cse = {}
+    win_sub_025 = {}
+    win_sub_975 = {}
+    for col in SP_cmeans.columns:
+        win_means = circ_winsorize(SP_cmeans[col],col)
+        win_sub_cmean[col] = cim(win_means, high=360, low=0) #winsorize circular mean
+        if col==0 and win_sub_cmean[col]>180:
+            win_sub_cmean[col] = win_sub_cmean[col] - 360
+        win_sub_cse[col] = cis(win_means, high=360, low=0) #winsorize circular std
+        if std_error:
+            win_sub_cse[col] /= math.sqrt(SP_cmeans.shape[0]) #calculate std error instead
+
+        win_means = np.array([x-360 if x-col > 180 else x for x in win_means])
+        win_sub_025[col] = win_sub_cmean[col] - np.quantile(win_means, 0.025)
+        win_sub_975[col] = np.quantile(win_means, 0.975) - win_sub_cmean[col]
+    return win_sub_cmean, win_sub_cse, win_sub_025, win_sub_975
+
+def sp_plot(ax, angles, win_sub_cmean, win_sub_025, win_sub_975, color_line = "black", color_err = "teal"):
+    
+    ax.plot([0,330],[0,330],linestyle="--", lw=4, color = color_line)
+
+    #Confidence interval for error bars
+    ax.errorbar(angles, win_sub_cmean.values(), yerr = [list(win_sub_025.values()), list(win_sub_975.values())], ms = 10, linestyle = "None",elinewidth=4, marker="o", color = color_err)
+
+    ax.set_xticks(angles)
+    ax.set_yticks(angles)
+    ax.tick_params(axis = 'both', labelsize=15)
+#     ax.set_xlabel("target movement angle", fontsize=18)
+#     ax.set_ylabel("mean predicted angle", fontsize=18)
+    # plt.savefig("smooth_pursuit_faze.png")
+    return ax
+
+def sp_plot_single_trial(subb, block, trial, angle, colx = 'pred_x', coly = 'pred_y'):
+
+        df = pd.read_csv(f"Subjects/{subb}/data.csv")
+        task_df = df[df["Task_Name"] == "2. Smooth Pursuit"]
+        row = task_df[(task_df["Trial_Nr"]==trial) & (task_df["Block_Nr"] == block)].iloc[0]
+        palette = sns.color_palette('colorblind', 3)
+        
+        seq = [int(i) for i in row.angles.split(";")]
+        index = seq.index(angle)
+        
+        fname = f"Subjects/{subb}/{row.rec_session_id}/blockNr_{row.Block_Nr}_taskNr_{row.Task_Nr}_trialNr_{row.Trial_Nr}_pursuit_rec.webm"
+        c = get_frame_count(fname)
+        vid_len = float(row.RecStop - row.RecStart)
+        fps = c/vid_len #in ms
+
+        start_times = row.anim_time.split("---values=")[1].strip("\"").split(";")
+        start_times = [int(t) - int(row.RecStart) for t in start_times if len(t)>1]
+
+        stop_times = row.ResetTimes.split("---values=")[1].strip("\"").split(";")
+        stop_times = [int(t) - int(row.RecStart) for t in stop_times if len(t)>1]
+
+        click_times = row.ClickTimes.split("---values=")[1].strip("\"").split(";")
+        click_times = [int(t) - int(row.RecStart) for t in click_times if len(t)>1]
+            
+            
+        l = [(int(i),int(j)) for i,j in zip(time_to_frame(start_times, fps), time_to_frame(stop_times, fps))]
+        click_frames = time_to_frame(click_times, fps)
+
+        try:
+            print("Recording length (ffmpeg): ",ffmpeg.probe(fname)["format"]["duration"])
+        except:
+            pass
+        print("RecStop - RecStart : ",vid_len)
+        print("Total Frame Count : ",c)
+        print("used Frames Count : ",sum([pt[1]-pt[0] for pt in l]))
+        print("FPS : ",fps*1000)
+        print("start times : ",start_times)
+        print("stop times : ",stop_times)
+        print("click_times : ", click_times)
+        print("diff : ", [int(i)-int(j) for i,j in zip(stop_times,start_times)])
+        
+        for i,model in enumerate([pred_path.MPII, pred_path.ETH, pred_path.FAZE]):
+            pred_df = pd.read_csv(os.path.join(model.value, f"{subb}/pred_allcalib/Block_{row.Block_Nr}/Smooth Pursuit{row.Trial_Id}.csv"))
+#             sub = pred_df[pred_df.frame.between(l[index][0],l[index][1])] # movement duration (animation start (pt[0]) -> animation stop(pt[1]))
+
+            try:
+                sub2 = pred_df[pred_df.frame.between(click_frames[index],l[index][1])] # from user click to movement stop
+                sm_output = saccademodel.fit([(row.pred_x, row.pred_y) for _,row in sub2.diff(1).iloc[1:,:].iterrows()])
+                onset_time = frame_to_time([len(sm_output["source_points"])], fps)[0]
+#                 onsets[seq[index]].append((click_times[index]+onset_time) - start_times[index]) # detected onset time from movement start in ms
+            except Exception as e:
+                print(e)
+
+            sub2[colx].reset_index(drop=True).plot(figsize=(20,7), marker="o", color=palette[i])
+            print(click_times[index], start_times[index], onset_time, )
+            plt.axvline(len(sm_output["source_points"]), linestyle = "--", color = palette[i])
+
+        return 
