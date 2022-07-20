@@ -7,7 +7,8 @@ import seaborn as sns
 import statistics
 from scipy.stats.mstats import winsorize
 from analysis_module import *
-import saccademodel
+# import saccademodel
+import ruptures
 from scipy.stats import circmean as cim, circstd as cis
 from sklearn.linear_model import LinearRegression
 from scipy.signal import savgol_filter
@@ -31,6 +32,7 @@ class Smooth_Pursuit():
         trial_x = {key:[] for key in self.angles}
         trial_y = {key:[] for key in self.angles}
         onsets = {key:[] for key in self.angles}
+        durations = {key:[] for key in self.angles}
         for _,row in self.task_df.iterrows():
             
             seq = [int(i) for i in row.angles.split(";")]
@@ -80,10 +82,17 @@ class Smooth_Pursuit():
                 trial_y[seq[index]].append(sub[coly])
                 try:
                     sub2 = pred_df[pred_df.frame.between(click_frames[index],pt[1])] # from user click to movement stop
-                    sm_output = saccademodel.fit([(row.pred_x, row.pred_y) for _,row in sub2.iterrows()])
-                    onset_time = frame_to_time([len(sm_output["source_points"])], fps)[0]
+                    dist = (np.diff(apply_filter(sub2[colx]),1)**2+np.diff(apply_filter(sub2[coly]),1)**2)**(1/2)
+    
+                    algo = ruptures.Dynp(model="rbf", min_size=3, jump = 1).fit(dist)
+                    result = algo.predict(n_bkps=2)
+                    result = [r+1 for r in result] #correcting for the size reduction by 1 when diff is calculated
+            
+                    onset_time = frame_to_time(result[:1], fps)[0]
                     onset_time = click_times[index]+onset_time - start_times[index]
                     onsets[seq[index]].append(onset_time) # detected onset time from movement start in ms, rejected if onset_time<70ms
+                    durations[seq[index]].append(frame_to_time([result[1]-result[0]], fps)[0]) #smooth pursuit duration
+                    
                 except Exception as e:
                     print(e)
                     onsets[seq[index]].append((np.nan, start_times[index]))
@@ -97,27 +106,32 @@ class Smooth_Pursuit():
                     plt.gca().invert_yaxis()
                     plt.show()
                     print("-"*50)
-        return trial_x,trial_y, onsets
+        return trial_x,trial_y, onsets, durations
       
 # Analysis functions
 
-def apply_filter(data):
-    win_len = len(data)//3
-    win_len = win_len+1 if win_len%2 == 0 else win_len
+def apply_filter(data,win_len=15, moving_avg =False):
+    
+    if moving_avg:
+        return data.rolling(win_len).mean().dropna()
     return savgol_filter(data, window_length = win_len, polyorder=1, deriv=0, mode='nearest', cval=0.0)
 
 def process_trials(trial_x, trial_y, angles, show = False):
     avg = {k:[] for k in angles}
     for angle in trial_x.keys():
         for trial in range(10):
-#             sm_x = savgol_filter(trial_x[angle][trial], 7, 1)
-#             sm_y = savgol_filter(trial_y[angle][trial], 7, 1)
-            if trial_x[angle][trial].shape[0] < 15: #Handling with min trial sample = window_size
-                continue
+
+#             if trial_x[angle][trial].shape[0] < 15: #Handling with min trial sample = window_size
+#                 continue
             #rolling mean
-            sm_x = trial_x[angle][trial].rolling(15).mean().dropna()
-            sm_y = trial_y[angle][trial].rolling(15).mean().dropna()
-            
+            try:
+                win_len = len(trial_x[angle][trial])//2
+                win_len = win_len+1 if win_len%2 == 0 else win_len
+                sm_x = apply_filter(trial_x[angle][trial], win_len = win_len)
+                sm_y = apply_filter(trial_y[angle][trial], win_len = win_len)
+            except Exception as e:
+                print(e)
+                continue
             model = LinearRegression()
             X = np.array(sm_x).reshape(-1,1)
             Y = sm_y
@@ -224,6 +238,7 @@ def sp_plot_single_trial(subb, block, trial, angle, colx = 'pred_x', coly = 'pre
             print("Recording length (ffmpeg): ",ffmpeg.probe(fname)["format"]["duration"])
         except:
             pass
+        print("file: ", fname)
         print("RecStop - RecStart : ",vid_len)
         print("Total Frame Count : ",c)
         print("used Frames Count : ",sum([pt[1]-pt[0] for pt in l]))
@@ -234,19 +249,24 @@ def sp_plot_single_trial(subb, block, trial, angle, colx = 'pred_x', coly = 'pre
         print("diff : ", [int(i)-int(j) for i,j in zip(stop_times,start_times)])
         
         for i,model in enumerate([pred_path.MPII, pred_path.ETH, pred_path.FAZE]):
+            print(model)
             pred_df = pd.read_csv(os.path.join(model.value, f"{subb}/pred_allcalib/Block_{row.Block_Nr}/Smooth Pursuit{row.Trial_Id}.csv"))
-#             sub = pred_df[pred_df.frame.between(l[index][0],l[index][1])] # movement duration (animation start (pt[0]) -> animation stop(pt[1]))
+            sub = pred_df[pred_df.frame.between(l[index][0],l[index][1])] # movement duration (animation start (pt[0]) -> animation stop(pt[1]))
 
-            try:
-                sub2 = pred_df[pred_df.frame.between(click_frames[index],l[index][1])] # from user click to movement stop
-                sm_output = saccademodel.fit([(row.pred_x, row.pred_y) for _,row in sub2.diff(1).iloc[1:,:].iterrows()])
-                onset_time = frame_to_time([len(sm_output["source_points"])], fps)[0]
-#                 onsets[seq[index]].append((click_times[index]+onset_time) - start_times[index]) # detected onset time from movement start in ms
-            except Exception as e:
-                print(e)
+            sub2 = pred_df[pred_df.frame.between(click_frames[index],l[index][1])] # from user click to movement stop
+            dist = (np.diff(apply_filter(sub2[colx]),1)**2+np.diff(apply_filter(sub2[coly]),1)**2)**(1/2) #calculate derivative/vel after smoothing
+            
+            #Change point detection with dynamic programming, no. of breakpoints = 2 [onset and offset of SP]
+            win_len = len(sub2)//3 #ref for parameter determination https://doi.org/10.1016/j.rinp.2018.08.033
+            win_len = win_len+1 if win_len%2 == 0 else win_len
+            algo = ruptures.Dynp(model="rbf", min_size=3, jump = 1).fit(dist)
+            result = algo.predict(n_bkps=2) 
+            result = [r+1 for r in result] #correcting for diff reducing one sample
+            print(result[:-1], f"no. of samples : {result[-1]}")
+            
 
             sub2[colx].reset_index(drop=True).plot(figsize=(20,7), marker="o", color=palette[i])
-            print(click_times[index], start_times[index], onset_time, )
-            plt.axvline(len(sm_output["source_points"]), linestyle = "--", color = palette[i])
+            plt.axvline(result[0], linestyle = "--", color = palette[i])
+            plt.axvline(result[1], linestyle = "-", color = palette[i])
 
         return 
