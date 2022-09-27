@@ -64,7 +64,10 @@ def time_to_frame(l, fps):
     return [int(fps*float(pt)) for pt in l]
 
 def frame_to_time(l, fps):
-    return [int(frame/fps) for frame in l]
+    if type(l) == list:
+        return [int(frame/fps) for frame in l]
+    else:
+        return int(l/fps)
 
 def circ_winsorize(reg_angles, ref):
     rotated = [i-ref for i in reg_angles] #center around ref angle

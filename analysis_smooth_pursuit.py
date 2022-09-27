@@ -82,7 +82,9 @@ class Smooth_Pursuit():
                 trial_y[seq[index]].append(sub[coly])
                 try:
                     sub2 = pred_df[pred_df.frame.between(click_frames[index],pt[1])] # from user click to movement stop
-                    dist = (np.diff(apply_filter(sub2[colx]),1)**2+np.diff(apply_filter(sub2[coly]),1)**2)**(1/2)
+                    win_len = len(sub2)//3 #ref for parameter determination https://doi.org/10.1016/j.rinp.2018.08.033
+                    win_len = win_len+1 if win_len%2 == 0 else win_len
+                    dist = (np.diff(apply_filter(sub2[colx], win_len=win_len),1)**2+np.diff(apply_filter(sub2[coly], win_len=win_len),1)**2)**(1/2)
     
                     algo = ruptures.Dynp(model="rbf", min_size=3, jump = 1).fit(dist)
                     result = algo.predict(n_bkps=2)
@@ -153,7 +155,8 @@ def process_trials(trial_x, trial_y, angles, show = False):
     return avg
 
 def mean_angle_preds(trial_x,trial_y, angles, show= False):
-    reg_angles = process_trials(trial_x,trial_y, angles)#, show=True)
+    reg_angles = process_trials
+    (trial_x,trial_y, angles)#, show=True)
     cmean,diff,cstd = {},{},{}
     for angle in angles:
         win_angles = circ_winsorize(reg_angles[angle],angle) #winsorize around ref angle
@@ -190,6 +193,9 @@ def get_win_sub(SP_cmeans, std_error = False):
         win_sub_025[col] = win_sub_cmean[col] - np.quantile(win_means, 0.025)
         win_sub_975[col] = np.quantile(win_means, 0.975) - win_sub_cmean[col]
     return win_sub_cmean, win_sub_cse, win_sub_025, win_sub_975
+
+
+#Plotting Functions
 
 def sp_plot(ax, angles, win_sub_cmean, win_sub_025, win_sub_975, color_line = "black", color_err = "teal"):
     
@@ -254,11 +260,11 @@ def sp_plot_single_trial(subb, block, trial, angle, colx = 'pred_x', coly = 'pre
             sub = pred_df[pred_df.frame.between(l[index][0],l[index][1])] # movement duration (animation start (pt[0]) -> animation stop(pt[1]))
 
             sub2 = pred_df[pred_df.frame.between(click_frames[index],l[index][1])] # from user click to movement stop
-            dist = (np.diff(apply_filter(sub2[colx]),1)**2+np.diff(apply_filter(sub2[coly]),1)**2)**(1/2) #calculate derivative/vel after smoothing
-            
-            #Change point detection with dynamic programming, no. of breakpoints = 2 [onset and offset of SP]
             win_len = len(sub2)//3 #ref for parameter determination https://doi.org/10.1016/j.rinp.2018.08.033
             win_len = win_len+1 if win_len%2 == 0 else win_len
+            dist = (np.diff(apply_filter(sub2[colx], win_len=win_len),1)**2+np.diff(apply_filter(sub2[coly], win_len=win_len),1)**2)**(1/2) #calculate derivative/vel after smoothing
+            
+            #Change point detection with dynamic programming, no. of breakpoints = 2 [onset and offset of SP]
             algo = ruptures.Dynp(model="rbf", min_size=3, jump = 1).fit(dist)
             result = algo.predict(n_bkps=2) 
             result = [r+1 for r in result] #correcting for diff reducing one sample
@@ -267,6 +273,6 @@ def sp_plot_single_trial(subb, block, trial, angle, colx = 'pred_x', coly = 'pre
 
             sub2[colx].reset_index(drop=True).plot(figsize=(20,7), marker="o", color=palette[i])
             plt.axvline(result[0], linestyle = "--", color = palette[i])
-            plt.axvline(result[1], linestyle = "-", color = palette[i])
+            plt.axvline(result[1]+(0.08*(i-1)), linestyle = "-", color = palette[i], alpha=1)
 
         return 

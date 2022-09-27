@@ -7,9 +7,10 @@ import statistics
 from scipy.stats.mstats import winsorize
 from analysis_module import *
 
-import sys
-sys.path.append('Models/blink_Soukuova_and_Check/')
-from quick_blinks import get_ear
+# import sys
+# sys.path.append('Models/blink_Soukuova_and_Check/')
+# from quick_blinks import get_ear
+from st_dbscan import ST_DBSCAN #using event classification instead of blink det
 
 class FreeView():
     def __init__(self, subb, show=True):
@@ -59,37 +60,60 @@ class FreeView():
             trial_y[row["Trial_Id"]] = pred_df["pred_y"]
         return trial_x, trial_y    
     
+#ST-DBSCAN centroids
+def DB_centroids(data, model):
+    eps = {pred_path.MPII: 61, pred_path.ETH: 48, pred_path.FAZE: 14} #eps1 = precision RMS/2 for each model
     
+    st_dbscan = ST_DBSCAN(eps1 = eps[model], eps2 = 6, min_samples = 2).fit(data) #eps2 = 6
+    centroids = np.empty((0,2), int)
+    #Exclude outliers and first fixation
+    for cl in range(1, max(st_dbscan.labels)):
+#         print(np.mean(data[st_dbscan.labels==cl,:], axis = 0)[1:])
+        centroids = np.append(centroids, np.median(data[st_dbscan.labels==cl,:], axis = 0)[1:].reshape(-1,2), axis=0)
+    return centroids.astype(int)
     
 ## Plotting functions
   
-def plot_one_subject(trial, trial_x, trial_y, xlim=1600 ,ylim=900  , figsize=(18,9), n=14):
+def plot_one_subject(trial, trial_x, trial_y, xlim=1600 ,ylim=900  , figsize=(18,9), n=14, text=False, ax=None, **kwargs):
         img_name = FV_IMAGES[trial]
-        fig,ax = plt.subplots(figsize=figsize)
+        if ax==None:
+            fig,ax = plt.subplots(figsize=figsize)
         img = cv2.imread("FreeView_Images/"+img_name+".jpeg")
         print("Trial_Id", trial, "image name", img_name)
         img,xbounds, ybounds = labVanced_present(img)
         ax.imshow(imutils.opencv2matplotlib(img), origin="lower", extent = [xbounds[0],xbounds[1],ybounds[0], ybounds[1]])
-        ax.scatter(x=trial_x,y=trial_y)
+        ax.plot(trial_x,trial_y, **kwargs)
+        if text:
+            for i, x, y in zip(range(len(trial_x)), trial_x, trial_y):
+                ax.text(x, y, str(i), color="k", fontsize=12, ma='center', va='center', ha='center')
 #         ax.set_xlim(0,xlim)
 #         ax.set_ylim(0,ylim)
         return ax
     
-def plot_all_subjects(df, xlim=1600 ,ylim=900  , figsize=(18,9)):
+def plot_all_subjects(df, model, xlim=1600 ,ylim=900  , figsize=(18,9)):
     x_pts = df.trial_x.apply(pd.Series) #rows: Subjects, columns: trials/images 
     y_pts = df.trial_y.apply(pd.Series)
-    for trial in x_pts.columns: # images
+         
+    for trial in x_pts.columns[:]: # images
+        #plot image
         img_name = FV_IMAGES[trial]
-        palette = iter(sns.color_palette("colorblind",df.shape[0]))
-        plt.figure(figsize=figsize)
+        plt.figure(figsize=(16,6))
         img = cv2.imread("FreeView_Images/"+img_name+".jpeg")
         print("Trial_Id", trial, "image name", img_name)
         img,xbounds, ybounds = labVanced_present(img)
         plt.imshow(imutils.opencv2matplotlib(img), origin="lower", extent = [xbounds[0],xbounds[1],ybounds[0], ybounds[1]])
-        for x,y in zip(x_pts[trial],y_pts[trial]):
-            plt.scatter(x,y, color = next(palette))
-#             ax.set_xlim(0,xlim)
-#             ax.set_ylim(0,ylim)
+
+        palette = iter(sns.color_palette("colorblind",len(x_pts)))
+
+        #plot gaze pts for each subject
+        for subject in x_pts.index:
+            data = (pd.concat([x_pts[trial][subject], y_pts[trial][subject]], axis = 1).reset_index().values)
+            centroids = DB_centroids(data, model)
+
+            try:
+                plt.scatter(x=centroids[:,0], y=centroids[:,1], color=next(palette))
+            except IndexError as e:
+                print(f"subject {subject}, centroids: {len(centroids)}, exception: {e}")        
         plt.gca().invert_yaxis()
         plt.show()
     

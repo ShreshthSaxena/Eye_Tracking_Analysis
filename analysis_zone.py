@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statistics
 from scipy.stats.mstats import winsorize
+from sklearn import metrics
 from analysis_module import *
 
 class Zone_Classification():
@@ -87,3 +88,63 @@ class Zone_Classification():
             mean_x = {k:winsorize(v, limits=[0.1,0.1]).mean() for k,v in trial_x.items()}
             mean_y = {k:winsorize(v, limits=[0.1,0.1]).mean() for k,v in trial_y.items()}
         return trial_x,trial_y,mean_x,mean_y
+    
+    
+# subject wise confusion matrices
+def classification_metrics(df, classification_report=False):
+    conf_matrices = []
+       
+    for index, row in df.iterrows():
+        y_pred, y_true = [], []
+        for pt in range(1,17):
+            for trial in range(10):
+                y_pred.append(get_zone(row.trial_x[pt][trial], row.trial_y[pt][trial], (4,4))+1)
+                y_true.append(pt)
+        conf_matrix = metrics.confusion_matrix(y_true,y_pred)
+        conf_matrices.append(conf_matrix/10) #normalize by number of trials
+        if classification_report: #Update df
+            report = metrics.classification_report(y_true,y_pred, output_dict = True)
+            df.at[index, "accuracy"] = report["accuracy"]
+            df.at[index, "precision"] = report["macro avg"]["precision"]
+            df.at[index, "recall"] = report["macro avg"]["recall"]
+            df.at[index, "f1-score"] = report["macro avg"]["f1-score"]
+            df.at[index, "MCC"] = metrics.matthews_corrcoef(y_true, y_pred)
+    return np.array(conf_matrices)
+    
+    
+# previous method of calculating conf matric from mean of each subject
+# def get_conf_matrix(df):
+#     y_pred, y_true = [],[]
+#     for i,row in df.iterrows():
+#         for k in range(1,17):
+#             y_pred.append(get_zone(row.mean_x[k], row.mean_y[k], (4,4))+1)
+#             y_true.append(k)
+
+#     conf_matrix = metrics.confusion_matrix(y_true,y_pred)
+#     conf_matrix = (conf_matrix/df.shape[0])
+#     return conf_matrix
+
+# def classification_report(df, mcc=False):
+#     y_pred, y_true = [],[]
+#     for i,row in df.iterrows():
+#         for k in range(1,17):
+#             y_pred.append(get_zone(row.mean_x[k], row.mean_y[k], (4,4))+1)
+#             y_true.append(k)
+#     if mcc:
+#         phi = metrics.matthews_corrcoef(y_true, y_pred)
+#         return metrics.classification_report(y_true,y_pred), phi
+#     else:
+#         return metrics.classification_report(y_true,y_pred, output_dict = True)
+    
+
+def plot_zone(grid_size, ax, **kwargs):
+    '''
+    plots a grid of provided size
+    usage: plot_zone((4,4))
+    '''
+    ax.set_xlim(0,1600)
+    ax.set_ylim(0,900)
+    ax.set_xticks([(i+1)*1600//grid_size[0] for i in range(grid_size[0])])
+    ax.set_yticks([(i+1)*900//grid_size[1] for i in range(grid_size[1])])
+    ax.grid("both", **kwargs)
+    ax.invert_yaxis()
