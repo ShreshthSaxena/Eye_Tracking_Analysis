@@ -98,6 +98,11 @@ def get_zone(x,y,grid_size):
     r = y//(900//grid_size[1])
     return int(c+(r*grid_size[1]))
 
+def zone_center(pt):
+    center_x = (1600/4) * ((pt-1)%4) #zone width * column
+    center_y = (900/4) * ((pt-1)//4) #zone height *row
+    return (center_x,center_y)
+
 def labVanced_present(img):
     #LabVanced frame size = (1600,900)
     if (img.shape[1]/img.shape[0]) <= 16/9 : #width/height

@@ -91,15 +91,15 @@ class Zone_Classification():
     
     
 # subject wise confusion matrices
-def classification_metrics(df, classification_report=False):
+def classification_metrics(df, classification_report=False, grid_size=(4,4)):
     conf_matrices = []
        
     for index, row in df.iterrows():
         y_pred, y_true = [], []
         for pt in range(1,17):
             for trial in range(10):
-                y_pred.append(get_zone(row.trial_x[pt][trial], row.trial_y[pt][trial], (4,4))+1)
-                y_true.append(pt)
+                y_pred.append(get_zone(row.trial_x[pt][trial], row.trial_y[pt][trial], grid_size)+1)
+                y_true.append(get_zone(*zone_center(pt), grid_size)+1)
         conf_matrix = metrics.confusion_matrix(y_true,y_pred)
         conf_matrices.append(conf_matrix/10) #normalize by number of trials
         if classification_report: #Update df
@@ -111,6 +111,7 @@ def classification_metrics(df, classification_report=False):
             df.at[index, "MCC"] = metrics.matthews_corrcoef(y_true, y_pred)
     return np.array(conf_matrices)
     
+
     
 # previous method of calculating conf matric from mean of each subject
 # def get_conf_matrix(df):
