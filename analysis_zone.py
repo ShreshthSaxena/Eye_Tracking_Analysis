@@ -10,12 +10,11 @@ from sklearn import metrics
 from analysis_module import *
 
 class Zone_Classification():
+    
     def __init__(self, subb, show=True):
-        
         self.subb = subb
-        self.task = "4. Zone Classification"
         self.df = pd.read_csv(os.path.join("Subjects",subb,"data.csv"))
-        self.task_df = self.df[self.df["Task_Name"] == self.task]
+        self.task_df = self.df[self.df["Task_Name"] == "4. Zone Classification"]
         self.palette = sns.color_palette('colorblind', 16)
         if show:
             print("sp_df summary \n {}".format(self.summary()))
@@ -101,7 +100,8 @@ def classification_metrics(df, classification_report=False, grid_size=(4,4)):
                 y_pred.append(get_zone(row.trial_x[pt][trial], row.trial_y[pt][trial], grid_size)+1)
                 y_true.append(get_zone(*zone_center(pt), grid_size)+1)
         conf_matrix = metrics.confusion_matrix(y_true,y_pred)
-        conf_matrices.append(conf_matrix/10) #normalize by number of trials
+        N = 16*10/(grid_size[0]*grid_size[1]) #number of trials for each zone
+        conf_matrices.append(conf_matrix/N)
         if classification_report: #Update df
             report = metrics.classification_report(y_true,y_pred, output_dict = True)
             df.at[index, "accuracy"] = report["accuracy"]
@@ -138,14 +138,32 @@ def classification_metrics(df, classification_report=False, grid_size=(4,4)):
 #         return metrics.classification_report(y_true,y_pred, output_dict = True)
     
 
-def plot_zone(grid_size, ax, **kwargs):
+def plot_zone(grid_size, ax, annotate=False, ann_fontsize=10, ann_list=None, **kwargs):
     '''
     plots a grid of provided size
-    usage: plot_zone((4,4))
+    usage: plot_zone((4,4), axs)
+    Parameters:
+            ax : matplotlib axes 
+            annotate (Bool): set True to display text in grid
+            ann_list (list/array): array to use for displaying text. NOTE: check for size
+            ann_fontsize (int): size of text (only used if annotate is True)
+            **kwargs additional params for matplotlib grid
     '''
+    x_ticks = [(i+1)*1600//grid_size[0] for i in range(grid_size[0])]
+    y_ticks = [(i+1)*900//grid_size[1] for i in range(grid_size[1])]
     ax.set_xlim(0,1600)
     ax.set_ylim(0,900)
-    ax.set_xticks([(i+1)*1600//grid_size[0] for i in range(grid_size[0])])
-    ax.set_yticks([(i+1)*900//grid_size[1] for i in range(grid_size[1])])
+    ax.set_xticks(x_ticks)
+    ax.set_yticks(y_ticks)
     ax.grid("both", **kwargs)
+    
+    if annotate:
+        pos = np.meshgrid(x_ticks, y_ticks)
+        box_w = 1600//grid_size[0]
+        box_h = 900//grid_size[1]
+        for i,(x,y) in enumerate(zip(pos[0].flatten(),pos[1].flatten())):
+            if ann_list is None:
+                ax.text(x - (box_w/2), y - (box_h/2), str(i+1), fontsize= ann_fontsize, va='center', ha='center') #annotate with zone index
+            else:
+                ax.text(x - (box_w/2), y - (box_h/2), f"{round(ann_list[i],1)}%", fontsize= ann_fontsize, va='center', ha='center') #annonate with ann_list
     ax.invert_yaxis()

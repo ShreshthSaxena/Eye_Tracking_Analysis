@@ -11,11 +11,11 @@ from tqdm import tqdm
 ##globals
 from enum import Enum
 class pred_path(Enum):
-    ETH = "Models/ETH-XGaze-master/ETH-XGaze-master/Subjects/"
-    MPII = "Models/pytorch_mpiigaze-master/Subjects/"
-    FAZE = "Models/FAZE/few_shot_gaze/demo/Subjects/"
-    EAR = "Models/blink_Soukuova_and_Check/Subjects/"
-    RT_BENE = "Models/rt_gene-master/rt_gene-master/rt_bene_standalone/Subjects/"
+    ETH = "csv_backup/example_trials/ETHXGAZE"
+    MPII = "csv_backup/example_trials/MPIIGAZE"
+    FAZE = "csv_backup/example_trials/FAZE"
+    EAR = "csv_backup/example_trials/EAR"
+    RT_BENE = "csv_backup/example_trials/RT_BENE"
     
 __fnames = ['i05june05_static_street_boston_p1010806',
          'i102423191',
@@ -91,6 +91,9 @@ def clip(i,max):
     else:
         return i
 
+def flat_list(lis):
+    return np.array([i for j in list(lis) for i in j])
+    
 def get_zone(x,y,grid_size):
     x = clip(x,1599)
     y = clip(y,899)

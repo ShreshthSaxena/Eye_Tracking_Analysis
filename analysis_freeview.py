@@ -85,7 +85,7 @@ def plot_one_subject(trial, trial_x, trial_y, xlim=1600 ,ylim=900  , figsize=(18
         ax.plot(trial_x,trial_y, **kwargs)
         if text:
             for i, x, y in zip(range(len(trial_x)), trial_x, trial_y):
-                ax.text(x, y, str(i), color="k", fontsize=12, ma='center', va='center', ha='center')
+                ax.text(x, y, str(i), color="k", fontsize=17, ma='center', va='center', ha='center')
 #         ax.set_xlim(0,xlim)
 #         ax.set_ylim(0,ylim)
         return ax
@@ -102,20 +102,42 @@ def plot_all_subjects(df, model, xlim=1600 ,ylim=900  , figsize=(18,9)):
         print("Trial_Id", trial, "image name", img_name)
         img,xbounds, ybounds = labVanced_present(img)
         plt.imshow(imutils.opencv2matplotlib(img), origin="lower", extent = [xbounds[0],xbounds[1],ybounds[0], ybounds[1]])
-
-        palette = iter(sns.color_palette("colorblind",len(x_pts)))
-
+        
         #plot gaze pts for each subject
         for subject in x_pts.index:
             data = (pd.concat([x_pts[trial][subject], y_pts[trial][subject]], axis = 1).reset_index().values)
             centroids = DB_centroids(data, model)
 
             try:
-                plt.scatter(x=centroids[:,0], y=centroids[:,1], color=next(palette))
+                plt.scatter(x=centroids[:,0], y=centroids[:,1], color="orange", alpha=0.4)
             except IndexError as e:
                 print(f"subject {subject}, centroids: {len(centroids)}, exception: {e}")        
         plt.gca().invert_yaxis()
         plt.show()
+    
+def stationary_entropy(data, bin_size=54, screen_dim=(1600,900), show = False):
+    '''
+    Parameters:
+        data - Numpy array of coordinates (x,y) with shape (N,2) where N=number of gaze samples
+        bin_size - size of histogram bins, default set to 1 visual degree for our study
+        screen_dim - (width, height) of screen
+        show - set True to print entropy
+    '''
+    df = pd.DataFrame(data, columns=('x','y'))
+    df['x_range'] = pd.cut(df.x, np.arange(0, screen_dim[0], bin_size), right=False)
+    df['y_range'] = pd.cut(df.y, np.arange(0, screen_dim[1], bin_size), right=False)
+    df=df.groupby(['x_range','y_range']).size().reset_index().rename(columns={0:'count'})
+    df['p']=df['count']/df['count'].sum()
+    df['p*log(p)']= np.log2(df['p'])*df['p']
+    max_H = math.log2((screen_dim[0]/bin_size)*(screen_dim[1]/bin_size))
+    H = abs(df['p*log(p)'].sum())
+    norm_H = H/max_H
+    if show:
+        print('State Spaces',screen_dim[0]/bin_size, '*', screen_dim[1]/bin_size, '=', (screen_dim[0]/bin_size)*(screen_dim[1]/bin_size))
+        print('Maximum entropy', max_H)
+        print('Observed entropy' , H)
+        print('Normalised entropy', norm_H)
+    return norm_H
     
 ## Analysis functions and metrics
 # Ref:

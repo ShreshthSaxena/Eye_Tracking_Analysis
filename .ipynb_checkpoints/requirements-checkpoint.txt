@@ -1,0 +1,11 @@
+pandas==1.3.5
+numpy
+tqdm
+ffmpeg
+imutils
+opencv-python
+pingouin
+statsmodel
+saccademodel
+sklearn
+scikit-learn

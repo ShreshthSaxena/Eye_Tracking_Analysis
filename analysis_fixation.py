@@ -11,9 +11,9 @@ import matplotlib.transforms as transforms
 from analysis_module import *
 
 class Fixation():
+    gt_points = [(16, 16), (16, 450), (16, 884), (539, 305), (539, 595), (800, 16), (800, 884), (1061, 305), (1061, 595), (1584, 16), (1584, 450), (1584, 884), (800, 450)]
+    
     def __init__(self, subb, show=True):
-        
-        self.gt_points = [(16, 16), (16, 450), (16, 884), (539, 305), (539, 595), (800, 16), (800, 884), (1061, 305), (1061, 595), (1584, 16), (1584, 450), (1584, 884), (800, 450)]
         self.subb = subb
         self.df = pd.read_csv(f"Subjects/{subb}/data.csv")
         self.task_df = self.df[self.df["Task_Name"] == "1. Fixation"]

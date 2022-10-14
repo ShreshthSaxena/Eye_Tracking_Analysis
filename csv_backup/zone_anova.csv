@@ -1,4 +1,4 @@
-,model,subject,recall,MCC
+,model,subject,accuracy,MCC
 0,MPII,s25,0.5625,0.549604309258181
 1,MPII,s81,0.25,0.21380899352993948
 2,MPII,s61,1.0,1.0
