@@ -1,7 +1,7 @@
 # Deep learning models for webcam eye-tracking in online experiments
 
 
-> This repository contains analysis scripts used to generate the plots and results reported in our paper.
+> This repository contains analysis scripts that can be used to generate/replicate the plots and results reported in our paper.
 
 <!-- This paper has been submitted for publication in *Some Journal*. -->
 > We conducted an online experiment consisting applying a battery of eye tracking tasks that were performed by participants remotely. The recorded webcam videos and responses were used to analyse eye movements using state-of-the-art deep learning based methods and benchmark their performance on multiple measures. The experimental design of our online experiment was as below 
