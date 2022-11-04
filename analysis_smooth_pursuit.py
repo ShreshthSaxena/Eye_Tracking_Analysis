@@ -87,7 +87,7 @@ class Smooth_Pursuit():
                     dist = (np.diff(apply_filter(sub2[colx], win_len=win_len),1)**2+np.diff(apply_filter(sub2[coly], win_len=win_len),1)**2)**(1/2)
     
                     algo = ruptures.Dynp(model="rbf", min_size=3, jump = 1).fit(dist)
-                    result = algo.predict(n_bkps=2)
+                    result = algo.predict(n_bkps=2) #onset and offset
                     result = [r+1 for r in result] #correcting for the size reduction by 1 when diff is calculated
             
                     onset_time = frame_to_time(result[:1], fps)[0]
