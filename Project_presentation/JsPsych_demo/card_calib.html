@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Device Calibration</title>
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/plugin-virtual-chinrest.js"></script>
+    <link href="jspsych/jspsych.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body></body>
+  <script>
+   
+    var jsPsych = initJsPsych({
+
+    });
+
+    var timeline = [];
+
+    var dev_calib = {
+	    type: jsPsychVirtualChinrest,
+	    blindspot_reps: 2,
+	    resize_units: "deg",
+	    pixels_per_unit: 50,
+	    item_path: "assets/Credit-Card.png"
+		};
+		timeline.push(dev_calib)
+
+    jsPsych.run(timeline);
+
+  </script>
+</html>
+

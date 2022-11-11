@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>WebcamET</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/serif.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<style>
+			figure {
+			  border: 0px #cccccc solid;
+			  padding: 0px;
+			  margin: 0em;
+			  display : inline-block;
+			}
+
+			figcaption {
+			  color: black;
+			  font-size: 15px;
+			  padding: 0px;
+			  text-align: center;			}
+			
+			li{
+			  margin: 10px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+		<div class="slides">
+		<section>
+			<h3 align="left">Deep learning for accurate, affordable and accessible eye-tracking</h3>
+			<h5 align="left" style="font-size: 60%;">Shreshth Saxena (<a href="mailto:saxens17@mcmaster.ca">saxens17@mcmaster.ca</a>)</br>
+			Supervised by Dr. Lauren Fink and Dr. Elke Lange </h5> 
+		</section>
+
+		<section>
+		<section data-auto-animate><h4>Eye Movements</h4></section>
+			
+			<section data-auto-animate><h4>Eye Movements</h4>
+				<img src="images/eye1.png" alt="retina" height=350>
+				<img src="images/rods_and_cones.png" alt="rods and cones" height=350>
+				</br><figcaption style="font-size: 40%" >Source: "Cognition / Daniel Reisberg"</</figcaption>
+				<aside class="notes">Blind spot and mouseview for later ref</aside>
+			</section>
+
+			<section data-auto-animate><h4 style="font-size: 180%;">Eye Movements</h4>
+				<aside class="notes">art perception, movie perception, visual search</aside>
+			<h6>Visual Attention</h6> <p style="font-size: 50%">Reading, scene viewing, art/film perception, visual search etc.</p>
+			<h5>Human Computer Interaction</h5><p style="font-size: 50%">Interface design, driving, aviation, marketing/advertising etc.</p>
+			<h5>Memory & Ageing</h5> <p style="font-size: 50%"> The obligatory effects of memory on eye movements, Ryan et al. (2007)</p>
+			<!-- <h5>Scene perception</h5><p style="font-size: 50%"> Henderson, J. M. (2011)</p> -->
+			<h5>Auditory Attention</h5> <p style="font-size: 50%">  Fink et al. (2018), Lange et al. (2017), Maroti et al. (2017)</p>
+			</font>
+			</section>
+		</section>
+		
+		<section>
+		<section data-auto-animate><h4>Eye Tracking</h4></section>
+		
+		<section data-auto-animate>
+			<h4>Eye Tracking (Hardware focussed)</h4>
+			<div class="r-stack">
+				<p class="fragment fade-in-then-out">Desktop mounted</p>
+				<figure class="fragment fade-in-then-out">
+					<img src="https://www.sr-research.com/wp-content/uploads/2019/11/eye-tracking-reading-solutions.jpg" height="300">
+  					<figcaption >SR Research Eyelink 1000</figcaption>
+				</figure>
+				<p class="fragment fade-in-then-out">Head mounted</p>
+				<figure class="fragment fade-in-then-out">
+					<img src="https://www.sr-research.com/wp-content/uploads/2020/10/eyelink-II-768x538.jpg" height=300>
+					<figcaption>SR Research Eyelink  II</figcaption>
+				</figure>
+				<figure class="fragment fade-in">
+					<img src="https://media.imotions.com/images/20220411115949/pupil-core-render-scaled.jpeg" width="450" height="300">
+					<figcaption>Pupil core glasses</figcaption>
+				</figure>
+			</div>
+			<img class = "fragment fade-in" src="https://ieeexplore.ieee.org/mediastore_new/IEEE/content/media/8982559/9021948/9022317/502300d683-fig-1-source-large.gif" width="450" height="250">
+			<img class = "fragment fade-in" src="https://dl.acm.org/cms/attachment/2ad34b9d-91c9-412d-a967-8c482a6942cb/chi19extendedabstracts-394-fig1.jpg" width="450" height="250">
+			<aside class="notes">expensive, properitary, population access</aside>
+		</section>
+
+		<section data-auto-animate>
+			<h4>Eye Tracking(Software focussed)</h4>
+			<img src="images/webcam_based.png" height=220 >
+			<div class="r-stack">
+				<figure class="fragment fade-in-then-out"><img src="https://cdn.mobilesyrup.com/wp-content/uploads/2022/06/Continuity-Camera-header.jpg" height="300"><figcaption>Source: Apple continuity camera</figcaption></figure>
+				<figure  class="fragment fade-in-then-out"><img src="images/gaze360.png"  height="300"><figcaption>Gaze360: Kellnhofer et al. (2019)</figcaption></figure>
+				<figure class="fragment fade-in-then-out">
+				<img src="images/rtgene.gif"  height="300"><figcaption>RT_Gene: Fischer et al. (2018)</figcaption></figure>
+				<figure class="fragment fade-in-then-out">
+				<img src="https://webgazer.cs.brown.edu/media/example/collision.png" height="300"><figcaption>Webgazer: Papoutsaki et al. (2016)</figcaption></figure>
+
+				<aside class="notes"> Image Overhead camera instead of eye glasses, mouseview.js</aside>
+			</div>
+		</section>
+		<section>
+			Eye Tracking(Software focussed)</br></br>
+			<img src="images/eye_infra.jpg" width="200" height="150">
+			<img class = "fragment" src="images/eye_webcam.png" width="200" height="150">
+		</section>
+		<section>Eye Tracking(Software focussed)</br></br>
+			<!-- <h2>Tablas con información</h2> -->
+			<table style='font-size:60%'>
+		    	<thead><tr>
+		            <th>Web browser based</th>
+		            <th>Deep learning based</th>
+		        </tr></thead>
+		        <tbody>
+		        <tr>
+		            <td>Proprietary: Xlabs, LabVanced, Gorilla
+		            </br>Open-sourced: WebGazer, TurkerGaze
+					</td>
+		            <td>MPIIGaze, RT-GENE, FAZE, ETHXGaze</td>
+		        </tr>
+		        <tr>
+		            <td>Specialized tasks: web browsing behavior (WebGazer, Xlabs), Image saliency prediction (TurkerGaze)
+		            </td>
+		            <td>Developed for generalized gaze prediction</td>
+		        </tr>
+		        <tr>
+		            <td>Low-order feature detection (susceptible to noise)</td>
+		            <td>Higher order feature learning (robust to noise)</td>
+		        </tr><tr>
+		            <td>Hardware specifications are a performance bottleneck</td>
+		            <td>Modular and actively being developed for better performance</td>
+				</tr><tr>
+		            <td>Webgazer reported an error of 4.17˚ in online studies</td>
+		            <td>FAZE reported an error of 3.18˚ on GazeCapture dataset</td>
+		        </tr><tr>
+		            <td>Online webcam-based eye tracking in cognitive science: A first look, Semmelmann and Weigelt (2018)</td>
+		            <td>Appearance-based Gaze Estimation With Deep Learning: A Review and Benchmark, Cheng et al. (2021)</td>
+		        </tr>
+		        </tbody>
+		    </table>
+		    <aside class="notes"> DL methods pushing the boundary, Proof of concept, not applied to online experiments</br>accuracy measures are calculated differently</aside>
+		</section>
+
+		<section>Deep learning based </br></br>
+			<div class="r-stack">
+				<figure class="fragment fade-in-then-out"><img src="images/appearance_based.png" height="350"><figcaption>Gudi et al. (2020)</figcaption></figure>
+				<figure class="fragment fade-in-then-out">
+				<img  src="https://d3i71xaburhd42.cloudfront.net/50d6c00b90ddcfa55bb23a7c5f6c31002b3f1495/5-Figure4-1.png" height="350"><figcaption>Cheng et al. (2021)</figcaption></figure>
+				<figure class="fragment fade-in"><img  src="https://images.deepai.org/converted-papers/2007.15837/x3.png" width="900" height="400"><figcaption>Xhang et al. (2020)</figcaption></figure>
+			</div>
+		</section>
+	</section>
+		
+	<section>
+	<section data-auto-animate><h4>Our study</h4></section>
+	<section data-auto-animate><h4>Our study</h4> 
+		<table style='font-size:60%'>
+		    	<thead><tr>
+		    		<th></th>
+		            <th>MPIIGaze</br>Zhang et al. (2015)</th>
+		            <th>ETHXGaze</br>Zhang et al. (2020)</th>
+		            <th>FAZE</br> Park et al. (2019)</th>
+		        </tr></thead>
+		        <tbody>
+		        <tr>
+		            <th>CNN architecture</th>
+		            <td>LeNet</td>
+		            <td>Resnet-50</td>
+		            <td>DenseNet based Encoder-Decoder</td>
+		         </tr>
+		         <tr>
+		         	<th>Training dataset</th>
+		         	<td>MPIIGaze</td>
+		         	<td>ETHXGaze</td>
+		         	<td>GazeCapture</td>
+		         </tr>
+		         <tr>
+		         	<th>Accuracy (MPIIGaze dataset)</th>
+		         	<td>6.3⁰</td>
+		         	<td>4.8⁰</td>
+		         	<td>3.06⁰</td>
+		         </tr>
+		         <tr>
+		         	<th>Inference speed</th>
+		         	<td>~12fps</td>
+		         	<td>~4fps</td>
+		         	<td>~1fps</td>
+		         </tr>
+		        </tbody>
+		    </table>
+		    <aside class="notes">Talk about factors that could affect eye tracking accuracy</aside>
+		</section>
+		<section data-auto-animate><h4>Our study</h4>
+			<p style="font-size:55%" align="right">N=65 </br>(age btw 20-35; no glasses)</br>Pre-registration: https://osf.io/qh8kx</p>
+			<img src="images/overview_experiment.png" height=450></section>
+			<aside class="notes">Talk about task battery!</aside>
+		</section>
+
+
+	<section> <h4>Online experiment</h4> 
+		<img src="images/participants.png">
+	</section>
+	<section>
+		<section><h4>Calibration</h4></section>
+
+		<section data-background-iframe="JsPsych_demo/card_calib.html" data-background-interactive><aside class="notes">Why calib? Remember blind spot? </aside></section>
+		<section data-auto-animate>
+			<h4>Online experiment</h4>
+			<img src="images/task_seq.png" height=500>
+			<aside class="notes">Paired data from calibration</aside>
+		</section>
+
+		<section>
+			<h4>Calibration</h4>			
+			<figure class="fragment"><img  src="images/calibration/dev_calib1.png" width="250" height="150"><figcaption>Screen calibration</figcaption></figure>
+			<figure class="fragment"><img src="images/calibration/dev_calib2.png" width="250" height="150"><figcaption>Distance calibration</figcaption></figure>
+			<figure class="fragment"><img src="images/calibration/E_calib.gif" width="250" height="150"><figcaption>Fix-point calibration</figcaption></figure>
+			<figure class="fragment"><img src="images/calibration/SP_calib.png" width="250" height="150"><figcaption>Smooth pursuit calibration</figcaption></figure>
+			</br></br>
+
+			<center class="fragment"><p style="font-size: 40%; width:70%; text-align: left;" >Shreshth Saxena, Elke Lange, and Lauren Fink. 2022. Towards efficient calibration for webcam eye-tracking in online experiments. In 2022 Symposium on Eye Tracking Research and Applications (ETRA '22). Association for Computing Machinery, New York, NY, USA, Article 27, 1–7. https://doi.org/10.1145/3517031.3529645</p></br>
+			<iframe src="images/calibration/calibration_ETRA.pdf" target="_parent" height=150 width=800></iframe></center>
+			<aside class="notes">Give comparisons, best practices, calibration time requirements..... so not gonna focus on calib in this talk</aside>
+		</section>
+
+		<!-- <section data-auto-animate>
+			<h4>Gaze Calibration</h4>
+			<img src="images/timeline.png">
+			<img src="images/calib_results.png" >
+		</section> -->
+		
+		</section>
+		<section>
+			<section>Task battery<img src="images/task_seq2.png">
+				<aside class="notes"> COUNTER BALANCING of task order</aside>
+			</section>
+
+			<section data-auto-animate><h4>Fixation</h4>
+				<div class="r-stack">
+					<img class = "fragment fade-in-then-out" src="images/fixation/fix.gif" height=90% width=40%>
+					<img class = "fragment fade-in-then-out" src="images/fixation.png" height=90% width=40%>
+					<img class = "fragment fade-in-then-out" src="images/fixation/single_trial.png">
+					<img class = "fragment fade-in" src="images/fixation/overall.png">					
+				</div>
+				<table class="fragment" style='font-size:60%' width="100%">
+					<tr><th></th>
+						<th>MPIIGaze</th>
+						<th>ETHXGaze</th>
+						<th>FAZE</th></tr>
+					<tr>
+						<th>Accuracy</th>
+						<td>3.70°</br> (IQR: 2.74°-4.59°)</td>
+						<td>3.40°</br> (IQR: 2.67°-4.13°)</td>
+						<td>2.44°</br> (IQR: 1.86°-2.90°)</td></tr>
+					<tr>
+						<th>Root Mean Squared</br> (Precision)</th>
+						<td>2.33°</br> (IQR: 1.88-2.75)</td>
+						<td>1.80°</br> (IQR: 1.28°-2.29°)</td>
+						<td>0.47°</br> (IQR: 0.29-0.64)</td>
+					</tr>
+					<tr>
+						<th>Standard Deviation</br> (Precision)</th>
+						<td>2.96°</br> (IQR: 2.32°-3.57°)</td>
+						<td>2.39°</br> (IQR: 1.70-2.98)</td>
+						<td>1.63°</br> (IQR: 1.06° 2.07°)</td>
+					</tr>
+
+					
+				</table>
+			</section>
+
+			<section data-auto-animate><h4>Zone classification</h4>
+				<div class="r-stack">
+					<img class = "fragment fade-in-then-out" src="images/zone_classification.gif" height=300>
+					<img class = "fragment fade-in-then-out" src="images/zone/single_trial.png" height="500">
+					<img class = "fragment fade-in-then-out" src="images/zone/overall.png">
+					<aside class="notes">This is confusion matrix, diagnol is perfect..... if you're a psychological researcher and want to present 16 objects but also lower.... FAZE overall acc was 0.65</aside>
+				</div>
+			</section>
+			<section data-auto-animate><h4>Zone classification</h4>
+				<img src="images/zone/2x2.png" height=180 width="800">
+				<img class = "fragment " src="images/zone/1x2.png"height=160 width=800>
+				<img class = "fragment " src="images/zone/2x1.png" height=160 width=800>
+				<aside class="notes">tasks where you want to present only 2 or 4 objects, also better to present horizontally!</aside>
+			</section>
+
+			<section data-auto-animate><h4>Free viewing</h4>
+				<div class="r-stack">
+					<img class = "fragment fade-out" src="images/free_viewing.png" height=300>
+					<img class = "fragment fade-in-then-out" src="images/free_viewing/step1.png" height="600">
+					<img class = "fragment fade-in-then-out" src="images/free_viewing/step2.png" height="600">
+					<img class = "fragment fade-in-then-out" src="images/free_viewing/step3.png" height="600">
+				</div>
+			</section>
+			<section data-auto-animate><h4>Free viewing</h4>
+				<div class="r-stack">
+					<img class = "fragment fade-out" src="images/free_viewing/single_trial.png" height="120%">
+					<img class = "fragment fade-in" src="images/free_viewing/overall.png">
+				</div></br>
+				<table class="fragment" style="font-size:60%">
+					<tr><th></th>
+						<th>MPIIGaze</th>
+						<th>ETHXGaze</th>
+						<th>FAZE</th></tr>
+					<tr>
+						<th>Fixation count</th>
+						<td>14</br> IQR: 12-18</td>
+						<td>13</br> IQR: 10-15</td>
+						<td>12</br> IQR: 11-13</td></tr>
+					<tr>
+						<th>Gaze entropy</th>
+						<td>0.40</br> IQR:0.38-0.44</td>
+						<td>0.38</br> IQR: 0.35-0.41</td>
+						<td>0.35</br> IQR: 0.33-0.37</td></tr>
+				</table>
+				<aside class="notes">Talk about Judd, images have different number of salient clusters</aside>
+			</section>
+			<section data-visibility="hidden"><img src="images/free_viewing/overall_withGT.png"></section>
+
+			<section data-auto-animate><h4>Smooth pursuit</h4>
+				<div class="r-stack">
+					<img class = "fragment fade-in-then-out" src="images/smooth_pursuit/SP_1.png" height=300>
+					<img class = "fragment fade-in-then-out" src="images/smooth_pursuit/SP_2.png" height=300>
+					<img class = "fragment fade-in-then-out" src="images/smooth_pursuit/single_trial.png" >
+					<figure class = "fragment fade-in-then-out"><img src="images/smooth_pursuit/overall.png"  height=550><img src="images/legend.png" height="50"></figure>
+					<img class = "fragment fade-in-then-out" src="images/smooth_pursuit/overall2.png">
+				</div>
+			</section>
+
+			<section data-auto-animate><h4>Blink detection</h4>
+				<div class="r-stack">
+					<img class = "fragment fade-in-then-out" src="images/blinks.png" height=300>
+					<img class = "fragment fade-in-then-out" src="images/blinks/models.png" height=400>
+					<img class = "fragment fade-in-then-out" src="images/blinks/single_trial.png" height=400>
+					<img class = "fragment fade-in" src="images/blinks/overall.png"  height=200>
+				</div>
+				<table class="fragment" style="font-size:60%">
+					<tr>
+						<th></th>
+						<th>EAR</th>
+						<th>RT_BENE</th></tr>
+					<tr>
+						<th>blinks/trial</th>
+						<td>6.9 (IQR: 6.3-7.2)</td>
+						<td>5.3 (IQR: 4.9-6)</tr>
+					<tr>
+						<th>blink latency</th>
+						<td>381 ms(IQR: 293-427 ms)</td>
+						<td>419 ms(IQR: 318-502 ms)</td>
+					</tr>
+					<tr>
+						<th>blink duration</th>
+						<td>403 ms(IQR: 383-424 ms)</td>
+						<td>212 ms(IQR : 157-243 ms)</td>
+					</tr>
+				</table>
+			</section>
+		</section>
+		<section>
+			<section data-auto-animate><h3>Comparing with lab-based eye tracking</h3>
+				<img src="https://dfzljdn9uc3pi.cloudfront.net/2019/7086/1/fig-1-2x.jpg" height="80%" width="75%">
+				<figcaption style="font-size: 60%;">Ehinger et al. (2019) <a href="https://doi.org/10.7717/peerj.7086">https://doi.org/10.7717/peerj.7086</a></figcaption>
+			</tr>
+		</table>
+			</section>
+			<section data-auto-animate><h3>Comparing with lab-based eye tracking</h3></br></br>
+				<table style="font-size:60%">
+				<tr><th>Task</th><th> Measure</th><th> Webcam results (model)</th><th> Pupil Labs</th><th> EyeLink</th></tr>
+				<tr><th rowspan="3" style="vertical-align:middle;">Fixation</th><td> Accuracy</td><td> 2.44° (FAZE)</td><td> 0.82°</td><td> 0.57°</td></tr>
+				<tr><td> Precision (RMS)</td><td> 0.47° (FAZE)</td><td> 0.119° </td><td> 0.023°</td></tr>
+				<tr><td> Precision (STD)</td><td> 1.63° (FAZE)</td><td> 0.311°</td><td> 0.193° </td></tr>
+				<tr><th>Smooth Pursuit</th><td> Onset latency</td><td> 0.267s (MPIIGaze)</td><td> 0.245s</td><td> 0.241s</td></tr>
+				<tr><th rowspan="2" style="vertical-align:middle;">Blink Detection</th><td> Number of blinks</td><td> 6.9 (EAR)</td><td> 5.3 </td><td> *7.1 </td></tr>
+				<tr><td> Blink duration</td><td> 0.212s (RT_BENE)</td><td> *0.214s </td><td> 0.190s</td></tr>
+
+				</table>
+			</section>
+		</section>
+
+		<section>
+		<section data-auto-animate>
+			<h4>Conclusion</h4>
+			<table style="font-size: 70%; "><tr><td style="vertical-align: middle;">
+			<ul>
+				<li class="fragment">Eye-tracking task battery provided a comprehensive evaluation</li>
+				<li class="fragment">Accuracy of 2.4° from best performing model</li>
+				<li class="fragment">Better accuracy near the center of screen</li>
+				<li class="fragment">High accuracy in classifying gaze to screen zones/regions</li>
+				<li class="fragment">Can generate heatmaps and scanpaths similar to lab-based eye-tracking</li>
+				<li class="fragment">Can accurately tracks gaze movement direction</li>
+				<li class="fragment">FAZE performs best in all tasks but also is the most computationally expensive</li>
+				<li class="fragment">Blink detection with appearance based methods is comparable to high resolution eye trackers</li>
+			</ul></td>
+			<td><img src="images/result_sum.png" width=400></td></tr></table>
+		</section>
+		<section data-auto-animate>
+			<h4>Conclusion</h4>
+			<ul>
+				<li style="font-size: 70%">Deep learning improves eye tracking accuracy for online setups </li>
+				<li style="font-size: 70%"> It increases affordability, scalability and validity of studies </li>
+				<li style="font-size: 70%"> It requires less calibration, longer trials feasible </li>
+				<li style="font-size: 70%"> We create and release processing pipelines for 30Hz eye-tracking data </li>
+				<li style="font-size: 70%">Limitations: Resolution, real-time application</li>
+			</ul>
+			<aside class="notes">Longer trials ex: music videos or movies which hasnt been done yet with webcam, ////, Don't end on limitation.... nonetheless ability to sample globally, cross-culture studies</aside>
+		</section>
+		</section>
+		<section><h5 class="r-fit-text"></br></br>Thank you for your attention</h5>
+			<p  align="left" style="vertical-align:bottom;">
+			<font style="font-size:50%">
+		Acknowledgement: Max Planck institute for Empirical Aesthetics, Frankfurt, Germany</font></br>
+		<!-- <img src="https://www.aesthetics.mpg.de/fileadmin/_processed_/c/0/csm_Musik-People-Lauren-Fink_7ab3874cd5.jpg" height="160"> -->
+		<!-- <img src="https://www.aesthetics.mpg.de/fileadmin/_processed_/3/1/csm_Musik-People-Elke-Lange_bf068dd2e0.jpg" height="160"> -->
+			<img src="https://www.aesthetics.mpg.de/fileadmin/templates/img/MPIEA-Logo-Web-EN-4by1.svg" height="100">
+	
+</p></section>
+		</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			Reveal.initialize({
+				hash: true,
+				slideNumber:true, 
+				width: 1080,
+				height: 720,
+				maxscale: 2.0,
+
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+			});
+		</script>
+
+		<script src="https://mouseview-docs.netlify.app/MouseView.js" type="module"></script>
+
+		<script type="text/javascript">
+			function init_mouseview(event){
+				if (event.key == "z"){
+					// set some parameters
+					mouseview.params.apertureSize = 150
+					mouseview.params.overlayColour = '#17202A' //i.e. hex black
+					mouseview.params.overlayAlpha = 0.2
+					// initiate the overlay 
+					mouseview.init()
+				}
+				else if (event.key =="x"){
+					try{ mouseview.removeAll() }catch{ }
+				} 
+			}
+			window.addEventListener('keypress', init_mouseview)
+		</script>
+	</body>
+</html>
