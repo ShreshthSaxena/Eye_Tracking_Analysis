@@ -1,3 +1,11 @@
+"""
+This module contains common helper functions used for compiling and analysing webcam eye-tracking trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+
+Author: Shreshth Saxena (shreshth.saxena@ae.mpg.de)
+"""
+
+
 import pandas as pd
 import numpy as np    
 import imutils
@@ -141,7 +149,7 @@ def labVanced_present(img):
 #     return f*100/c, c/float(vid_len)
 
 
-## Calib Tests Dataframes
+## consolidate Calib Tests Dataframe functions for calib_tests.ipynb
 def consolidate_1(subjects, model, labels = ["Beg", "Beg+Mid", "Beg+Mid+End"], save = False):
     ct1 = pd.DataFrame(columns = ["subject","factor","acc"])
     for subb in tqdm(subjects): 

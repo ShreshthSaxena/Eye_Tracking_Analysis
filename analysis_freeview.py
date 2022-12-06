@@ -1,3 +1,8 @@
+"""
+This module contains helper functions used for compiling, analysing and plotting Free Viewing trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -6,10 +11,6 @@ import seaborn as sns
 import statistics
 from scipy.stats.mstats import winsorize
 from analysis_module import *
-
-# import sys
-# sys.path.append('Models/blink_Soukuova_and_Check/')
-# from quick_blinks import get_ear
 from st_dbscan import ST_DBSCAN #using event classification instead of blink det
 
 class FreeView():
@@ -68,12 +69,10 @@ def DB_centroids(data, model):
     centroids = np.empty((0,2), int)
     #Exclude outliers and first fixation
     for cl in range(1, max(st_dbscan.labels)):
-#         print(np.mean(data[st_dbscan.labels==cl,:], axis = 0)[1:])
         centroids = np.append(centroids, np.median(data[st_dbscan.labels==cl,:], axis = 0)[1:].reshape(-1,2), axis=0)
     return centroids.astype(int)
     
 ## Plotting functions
-  
 def plot_one_subject(trial, trial_x, trial_y, xlim=1600 ,ylim=900  , figsize=(18,9), n=14, text=False, ax=None, **kwargs):
         img_name = FV_IMAGES[trial]
         if ax==None:
@@ -115,6 +114,7 @@ def plot_all_subjects(df, model, xlim=1600 ,ylim=900  , figsize=(18,9)):
         plt.gca().invert_yaxis()
         plt.show()
     
+##Task Measures
 def stationary_entropy(data, bin_size=54, screen_dim=(1600,900), show = False):
     '''
     Parameters:
@@ -139,7 +139,6 @@ def stationary_entropy(data, bin_size=54, screen_dim=(1600,900), show = False):
         print('Normalised entropy', norm_H)
     return norm_H
     
-## Analysis functions and metrics
 # Ref:
 # https://github.com/herrlich10/saliency/blob/master/benchmark/utils.py
 # https://github.com/cvzoya/saliency/tree/master/code_forMetrics

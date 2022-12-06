@@ -1,7 +1,12 @@
+"""
+This module contains helper functions used for compiling and analysing Blinks trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+"""
+
+
 import os
 import pandas as pd
 import numpy as np
-# import pylab
 import ffmpeg
 import matplotlib.pyplot as plt
 import statistics
@@ -35,7 +40,7 @@ class Blink_Detect():
         for _,row in self.task_df.iterrows():
             rec_name = row.BlinkRec
             pred_df = pd.read_csv(os.path.join(model.value, "{}/{}.csv".format(self.subb,rec_name[:-5]))) 
-            trial_probs[row.Trial_Id + (5 if row.Block_Nr == 13 else 0)] = pred_df.iloc[:,-1]
+            trial_probs[row.Trial_Id + (5 if row.Block_Nr == 13 else 0)] = pred_df.iloc[:,-1]  #Block and trial numbers are set to our experiment design, would need to be adjusted for other data
         return trial_probs
     
     def parse_trials(self, model, show = True, trial=None):
@@ -91,7 +96,7 @@ class Blink_Detect():
                 result = [r for r in result if (disp_df.iloc[r-3:r+3,-1].mean()>0.2)] #eliminate changepoints based on neighbouring peaks
                 if len(result)<2: #check for clustering
                     continue
-            else:
+            elif model == pred_path.EAR:
                 result = [r for r in result if (disp_df.iloc[r-3:r+3,-1] < disp_df.iloc[:,-1].quantile(0.22)).any()] #eliminate changepoints on troughs 
                 
             
@@ -150,36 +155,8 @@ class Blink_Detect():
             #     plt.plot(signals)
             #     plt.show()
                 print("-"*50)
+            #Block and trial numbers are set to our experiment design, would need to be adjusted for other data
             trial_latencies[row.Trial_Id + (5 if row.Block_Nr == 13 else 0)] = np.array(latencies)
             num_of_blinks[row.Trial_Id + (5 if row.Block_Nr == 13 else 0)] = len(trial_blinks)
             blink_durations[row.Trial_Id + (5 if row.Block_Nr == 13 else 0)] = np.array(blink_dur)
         return trial_latencies, num_of_blinks, blink_durations
-    
-    
-#Brakel, J.P.G. van (2014). "Robust peak detection algorithm using z-scores". Stack Overflow. Available at: https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data/22640362#22640362 (version: 2020-11-08).
-# def thresholding_algo(y, lag, threshold, influence):
-#     signals = np.zeros(len(y))
-#     filteredY = np.array(y)
-#     avgFilter = [0]*len(y)
-#     stdFilter = [0]*len(y)
-#     avgFilter[lag - 1] = np.mean(y[0:lag])
-#     stdFilter[lag - 1] = np.std(y[0:lag])
-#     for i in range(lag, len(y)):
-#         if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
-#             if y[i] > avgFilter[i-1]:
-#                 signals[i] = 1
-#             else:
-#                 signals[i] = -1
-
-#             filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
-#             avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-#             stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-#         else:
-#             signals[i] = 0
-#             filteredY[i] = y[i]
-#             avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-#             stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-
-#     return dict(signals = np.asarray(signals),
-#                 avgFilter = np.asarray(avgFilter),
-#                 stdFilter = np.asarray(stdFilter))

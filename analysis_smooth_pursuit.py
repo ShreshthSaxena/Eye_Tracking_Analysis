@@ -1,3 +1,9 @@
+"""
+This module contains helper functions used for compiling, analysing and plotting Smooth Pursuit trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+"""
+
+
 import os
 import pandas as pd
 import numpy as np
@@ -7,7 +13,6 @@ import seaborn as sns
 import statistics
 from scipy.stats.mstats import winsorize
 from analysis_module import *
-# import saccademodel
 import ruptures
 from scipy.stats import circmean as cim, circstd as cis
 from sklearn.linear_model import LinearRegression
@@ -174,7 +179,7 @@ def mean_angle_preds(trial_x,trial_y, angles, show= False):
             print("stdv: ", cstd[angle])
     return cmean,diff,cstd
 
-#cmeans 
+#circular means 
 def get_win_sub(SP_cmeans, std_error = False):
     win_sub_cmean = {}
     win_sub_cse = {}
@@ -196,7 +201,6 @@ def get_win_sub(SP_cmeans, std_error = False):
 
 
 #Plotting Functions
-
 def sp_plot(ax, angles, win_sub_cmean, win_sub_025, win_sub_975, color_line = "black", color_err = "teal"):
     
     ax.plot([0,330],[0,330],linestyle="--", lw=4, color = color_line)

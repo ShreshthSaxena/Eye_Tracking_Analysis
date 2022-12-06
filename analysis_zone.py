@@ -1,3 +1,8 @@
+"""
+This module contains helper functions used for compiling, analysing and plotting Zone Classification trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -33,7 +38,6 @@ class Zone_Classification():
             
             rec_name = row.recordZone
             rec_id = row.rec_session_id
-#             fname = "Subjects/{}/{}/{}".format(self.subb,rec_id,rec_name)
             fname = f"Subjects/{self.subb}/{rec_id}/blockNr_{row.Block_Nr}_taskNr_{row.Task_Nr}_trialNr_{row.Trial_Nr}_recordZone.webm"
             c = get_frame_count(fname)
             vid_len = float(row.RecStop - row.RecStart)

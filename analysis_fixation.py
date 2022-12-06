@@ -1,3 +1,8 @@
+"""
+This module contains helper functions used for compiling, analysing and plotting Fixation trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -11,7 +16,7 @@ import matplotlib.transforms as transforms
 from analysis_module import *
 
 class Fixation():
-    gt_points = [(16, 16), (16, 450), (16, 884), (539, 305), (539, 595), (800, 16), (800, 884), (1061, 305), (1061, 595), (1584, 16), (1584, 450), (1584, 884), (800, 450)]
+    gt_points = [(16, 16), (16, 450), (16, 884), (539, 305), (539, 595), (800, 16), (800, 884), (1061, 305), (1061, 595), (1584, 16), (1584, 450), (1584, 884), (800, 450)] #Location (x,y) of displayed target points on the screen
     
     def __init__(self, subb, show=True):
         self.subb = subb
@@ -61,10 +66,10 @@ class Fixation():
             
 #             if not np.isnan(row.FixRec): #LabVanced wierd behaviour: does not save file names of some recordings
 #                 fname = f"Subjects/{self.subb}/{rec_id}/{fixRec}"
-            time_pts = row.time_pts.split("---values=")[1].strip("\"").split(";")
+            time_pts = row.time_pts.split("---values=")[1].strip("\"").split(";") #operations are specific to LabVanced data structures, would need to be updated for data from other sources
             time_pts = [int(t) - int(row.RecStart) for t in time_pts if len(t)>1]
             
-            posChange = row.positionChange.split("---values=")[1].strip("\"").split(";")
+            posChange = row.positionChange.split("---values=")[1].strip("\"").split(";")  #operations are specific to LabVanced data structures, would need to be updated for data from other sources
             posChange = [int(t) - int(row.RecStart) for t in posChange if len(t)>1]
             if len(posChange) == 14:
                 posChange = posChange[1:] # first time_pt is when target appears on screen

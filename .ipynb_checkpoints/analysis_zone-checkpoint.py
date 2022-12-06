@@ -1,3 +1,10 @@
+"""
+This module contains helper functions used for compiling, analysing and plotting Zone Classification trial data.
+For more details refer to our project and pre-registration at https://osf.io/qh8kx/
+
+Author: Shreshth Saxena (shreshth.saxena@ae.mpg.de)
+"""
+
 import os
 import pandas as pd
 import numpy as np
