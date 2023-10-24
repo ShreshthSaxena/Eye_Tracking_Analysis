@@ -1,20 +1,30 @@
 # Deep learning models for webcam eye-tracking in online experiments
 
 
-> This repository contains analysis scripts that can be used to generate/replicate the plots and results reported in our paper.
+This repository contains analysis scripts that can be used to generate/replicate the plots and results reported in our paper.
 
-<!-- This paper has been submitted for publication in *Some Journal*. -->
-> We conducted an online experiment consisting applying a battery of eye tracking tasks that were performed by participants remotely. The recorded webcam videos and responses were used to analyse eye movements using state-of-the-art deep learning based methods and benchmark their performance on multiple measures. The experimental design of our online experiment was as below 
+**Title:** Deep learning models for webcam eye tracking in online experiments\
+**Published In:** Behavior Research Methods\
+**DOI:** https://doi.org/10.3758/s13428-023-02190-6\
+
+## Overview
+
+We conducted an online study to evaluate the performance of deep learning models when applied for webcam-based eye-tracking in remote settings. The models were evaluated on a custom eye-tracking task battery[^1] [^9] that tests performance over a multitude of gaze and blink measures.
+
+## Study Design
 
 ![](task_seq.png)
 
-*For detailed explanation of task battery see Saxena et al.[^1] and Ehinger et al. [^9]*
+
+For further details and results of our study please refer to our publications [^1][^2]. \
+The online experiment performed by the participants can be accessed here: https://www.labvanced.com/player.html?id=41124 \
+The OSF project linked with this study is available here: https://osf.io/qh8kx/
 
 
 <!-- ## Abstract -->
 
 
-## Software implementation
+## Code Implementation
 
 > Gaze and blink predictions were evaluated using the following models.
 > - MPIIGaze: https://github.com/hysts/pytorch_mpiigaze [^3]  
@@ -24,33 +34,17 @@
 
 All source code used to analyse the predictions and generate figures in the paper are in this repository. 
 
-Analysis and screening of participant data (See OSF pre-registration[^1]) is run using [Participant_Analysis.ipynb](Task_Analysis.ipynb)
+Analysis and screening of participant data (See OSF pre-registration) is run using [Participant_Analysis.ipynb](Task_Analysis.ipynb)
 
 Calibration analysis and comparison of different strategies for the ETRA paper (Saxena et al. 2022 [^2]) is run using [Calib_tests.ipynb](Calib_tests.ipynb)
 
-Task-wise parsing of eye-tracking data and utility functions are provided in analysis scripts prefixed with "analysis_*.py"
+Task-wise parsing of eye-tracking data and utility functions are provided in analysis scripts named following the convention "analysis_[task].py"
 
-Task-wise analysis are all run inside [Task_Analysis.ipynb](Task_Analysis.ipynb).
+Task-wise analyses are all run inside [Task_Analysis.ipynb](Task_Analysis.ipynb).
 
 Anova tests on individual task performance and the 3x4 ANOVA across all 3 models and 4 tasks are run inside [Task_ANOVA.ipynb](Task_ANOVA.ipynb).
 
-Saved dataframes and example data used in these files is provided in `csv_backup`
-
-
-## Getting the code
-
-A copy of all the files in this repository can be downloaded by cloning the
-[git](https://github.com/ShreshthSaxena/Eye_Tracking_Analysis) repository:
-
-  
-```
-git clone https://github.com/ShreshthSaxena/Eye_Tracking_Analysis.git
-```
-
-or [download a zip archive](https://github.com/ShreshthSaxena/Eye_Tracking_Analysis/archive/refs/heads/publish.zip).
-
-<!-- A copy of the repository is also archived at *insert DOI here*
- -->
+Saved data frames and example data used in these files are provided in `csv_backup`
 
 ## Dependencies
 
@@ -63,12 +57,12 @@ pip install -r requirements.txt
 
 ## License
 
-All source code is made available under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
+We make all our work available under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
 
 
 ## References
 
-[^1]: Shreshth Saxena, Lauren Fink and Elke Lange. 2021. An empirical experiment on deep learning models for tracking eye movements via webcam. OSF Pre-registration. https://osf.io/qh8kx
+[^1]: Saxena, S., Fink, L.K. & Lange, E.B. Deep learning models for webcam eye tracking in online experiments. Behav Res (2023). https://doi.org/10.3758/s13428-023-02190-6
 
 [^2]: Shreshth Saxena, Elke Lange, and Lauren Fink. 2022. Towards efficient calibration for webcam eye-tracking in online experiments. In 2022 Symposium on Eye Tracking Research and Applications (ETRA '22). Association for Computing Machinery, New York, NY, USA, Article 27, 1–7. https://doi.org/10.1145/3517031.3529645
 
