@@ -60,6 +60,12 @@ Use the requirements.txt file to install all dependencies. The code was develope
 pip install -r requirements.txt
 ```
 
+
+## License
+
+All source code is made available under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
+
+
 ## References
 
 [^1]: Shreshth Saxena, Lauren Fink and Elke Lange. 2021. An empirical experiment on deep learning models for tracking eye movements via webcam. OSF Pre-registration. https://osf.io/qh8kx
@@ -85,6 +91,4 @@ pip install -r requirements.txt
 [^11]: Cakmak, E., Plank, M., Calovi, D. S., Jordan, A., & Keim, D. (2021). Spatio-temporal clustering benchmark for collective animal behavior. Proceedings of the 1st ACM SIGSPATIAL International Workshop on Animal Movement Ecology and Human Mobility, 5–8. https://doi.org/10.1145/3486637.3489487
 
 
-## License
 
-All source code is made available under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
